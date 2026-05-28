@@ -30,8 +30,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','HarmonyOS Sans'
 .ni.on{color:var(--c-t1)}
 
 /* ---- scroll ---- */
-#sc{position:fixed;inset:0;z-index:10;overflow-y:auto;overflow-x:hidden;scroll-behavior:smooth;-webkit-overflow-scrolling:touch}
-.page{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:90px 28px 70px;position:relative}
+#sc{position:fixed;inset:0;z-index:10;overflow-y:auto;overflow-x:hidden;scroll-snap-type:y mandatory;scroll-behavior:smooth;-webkit-overflow-scrolling:touch}
+.page{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:90px 28px 70px;position:relative;scroll-snap-align:start;scroll-snap-stop:always}
 @media(min-width:768px){.page{padding:100px 72px 70px}}
 @media(min-width:1024px){.page{padding:100px 104px 70px}}
 .pi{max-width:1080px;width:100%;margin:0 auto}
@@ -443,55 +443,78 @@ sc.addEventListener('scroll',function(){if(!vl||!v||!v.duration||v.seeking)retur
 </script>
 
 <script>
-/* ===== SNAP + NAV ===== */
+/* ===== NAV + ANIMATIONS (CSS scroll-snap handles snapping) ===== */
 !function(){
 var sc=document.getElementById('sc'),pages=document.querySelectorAll('.page'),navs=document.querySelectorAll('.ni'),dots=document.querySelectorAll('.dot');
 var au=document.getElementById('arr-up'),ad=document.getElementById('arr-down'),hint=document.getElementById('page-hint');
-var TOTAL=pages.length,cur=0,spinning=!1,wAcc=0,wT=null;
+var TOTAL=pages.length,cur=0,spinning=!1,scrollT=null;
 var hints=[t('hint.0'),t('hint.1'),t('hint.2'),t('hint.3')];
 window._hints=hints;window._cur=cur;
 
 function upd(){
-au.classList.toggle('disabled',cur<=0);ad.classList.toggle('disabled',cur>=TOTAL-1);
-window._cur=cur;hint.textContent=I[L]['hint.'+cur]||hints[cur]||'';
-navs.forEach(function(n,i){n.classList.toggle('on',i===cur)});
-dots.forEach(function(d,i){d.classList.toggle('on',i===cur)});
+  au.classList.toggle('disabled',cur<=0);ad.classList.toggle('disabled',cur>=TOTAL-1);
+  window._cur=cur;hint.textContent=I[L]['hint.'+cur]||hints[cur]||'';
+  navs.forEach(function(n,i){n.classList.toggle('on',i===cur)});
+  dots.forEach(function(d,i){d.classList.toggle('on',i===cur)});
 }
-function snap(i){
-if(i<0||i>=TOTAL||spinning)return;spinning=!0;cur=i;
-pages[i].scrollIntoView({behavior:'smooth'});upd();
-setTimeout(function(){activate(i)},200);setTimeout(function(){spinning=!1},750);
+
+// Detect which page is most visible via scroll position
+function detectPage(){
+  var st=sc.scrollTop,sh=sc.clientHeight,best=0,bestIdx=0;
+  pages.forEach(function(p,i){
+    var top=p.offsetTop,bot=top+p.offsetHeight;
+    var vis=Math.min(bot,st+sh)-Math.max(top,st);
+    if(vis>best){best=vis;bestIdx=i}
+  });
+  if(bestIdx!==cur&&!spinning){cur=bestIdx;upd();activate(cur)}
 }
-sc.addEventListener('wheel',function(e){if(spinning){e.preventDefault();return}wAcc+=e.deltaY;clearTimeout(wT);wT=setTimeout(function(){if(Math.abs(wAcc)>40)snap(cur+(wAcc>0?1:-1));wAcc=0},100)},{passive:!0});
-au.addEventListener('click',function(){if(cur>0)snap(cur-1)});
-ad.addEventListener('click',function(){if(cur<TOTAL-1)snap(cur+1)});
-navs.forEach(function(n){n.addEventListener('click',function(){snap(parseInt(n.dataset.nav))})});
-var ty=0;sc.addEventListener('touchstart',function(e){ty=e.touches[0].clientY},{passive:!0});
-sc.addEventListener('touchend',function(e){if(spinning)return;var d=ty-e.changedTouches[0].clientY;if(Math.abs(d)>50)snap(cur+(d>0?1:-1))});
-document.addEventListener('keydown',function(e){if(e.key==='ArrowDown'||e.key==='j'){e.preventDefault();snap(cur+1)}if(e.key==='ArrowUp'||e.key==='k'){e.preventDefault();snap(cur-1)}});
-upd();
+
+sc.addEventListener('scroll',function(){
+  clearTimeout(scrollT);
+  scrollT=setTimeout(detectPage,150);
+},{passive:true});
+
+// Arrow buttons
+au.addEventListener('click',function(){if(cur>0)goTo(cur-1)});
+ad.addEventListener('click',function(){if(cur<TOTAL-1)goTo(cur+1)});
+// Nav items
+navs.forEach(function(n){n.addEventListener('click',function(){goTo(parseInt(n.dataset.nav))})});
+// Keyboard
+document.addEventListener('keydown',function(e){if(e.key==='ArrowDown'||e.key==='j'){e.preventDefault();goTo(cur+1)}if(e.key==='ArrowUp'||e.key==='k'){e.preventDefault();goTo(cur-1)}});
+
+function goTo(i){
+  if(i<0||i>=TOTAL||spinning)return;
+  spinning=!0;cur=i;upd();
+  pages[i].scrollIntoView({behavior:'smooth'});
+  setTimeout(function(){activate(i);spinning=!1},500);
+}
+
+// Count-up animation per page
+function animateCounts(s){
+  s.querySelectorAll('.count-up').forEach(function(el){
+    var target=parseFloat(el.dataset.count),dec=parseInt(el.dataset.dec)||0,suffix=el.dataset.suffix||'';
+    var start=0,dur=1400,begin=performance.now();
+    function tick(now){
+      var p=Math.min(1,(now-begin)/dur);
+      var val=start+(target-start)*(1-Math.pow(1-p,3));
+      el.textContent=(dec>0?val.toFixed(dec):Math.round(val))+suffix;
+      if(p<1)requestAnimationFrame(tick);else el.textContent=target.toFixed(dec)+suffix;
+    }
+    requestAnimationFrame(tick);
+  });
+}
+
+// Track which pages have been activated for count-up
+var countDone={};
 function activate(i){
-var s=pages[i];if(!s)return;
-s.querySelectorAll('.s-l,.s-r,.s-b').forEach(function(el){el.classList.remove('vis');void el.offsetWidth;el.classList.add('vis')});
-var orn=s.querySelector('.page-ornament');if(orn){orn.classList.remove('vis','init');void orn.offsetWidth;orn.classList.add('vis')}
-if(i===1&&window._rebuildCloud)window._rebuildCloud();
-// Count-up animation
-s.querySelectorAll('.count-up').forEach(function(el){
-  if(el.dataset.done)return;el.dataset.done='1';
-  var target=parseFloat(el.dataset.count),dec=parseInt(el.dataset.dec)||0,suffix=el.dataset.suffix||'';
-  var start=0,dur=1400,begin=performance.now();
-  function tick(now){
-    var p=Math.min(1,(now-begin)/dur);
-    var val=start+(target-start)*(1-Math.pow(1-p,3)); // ease-out
-    el.textContent=(dec>0?val.toFixed(dec):Math.round(val))+suffix;
-    if(p<1)requestAnimationFrame(tick);else el.textContent=target.toFixed(dec)+suffix;
-  }
-  requestAnimationFrame(tick);
-});
+  var s=pages[i];if(!s)return;
+  s.querySelectorAll('.s-l,.s-r,.s-b').forEach(function(el){el.classList.remove('vis');void el.offsetWidth;el.classList.add('vis')});
+  var orn=s.querySelector('.page-ornament');if(orn){orn.classList.remove('vis','init');void orn.offsetWidth;orn.classList.add('vis')}
+  if(i===1&&window._rebuildCloud)window._rebuildCloud();
+  if(!countDone[i]){countDone[i]=true;animateCounts(s)}
 }
-setTimeout(function(){activate(0)},500);
-var obs=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting&&e.intersectionRatio>.3){var i=parseInt(e.target.dataset.page);if(!isNaN(i))activate(i)}})},{threshold:[.3,.5]});
-pages.forEach(function(s){obs.observe(s)});
+
+upd();setTimeout(function(){detectPage()},500);
 }();
 </script>
 
