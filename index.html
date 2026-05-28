@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>潘子健 — PM / AI Builder</title>
+<style>
+:root{--c-bg:#000;--c-surf:rgba(255,255,255,.02);--c-border:rgba(255,255,255,.07);--c-t1:rgba(255,255,255,.92);--c-t2:rgba(255,255,255,.72);--c-t3:rgba(255,255,255,.52);--c-t4:rgba(255,255,255,.34);--c-accent:#bfa080;--c-accent-dim:rgba(191,160,128,.5);--ease: cubic-bezier(.22,.58,.12,1)}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','HarmonyOS Sans','Roboto','Noto Sans SC','Microsoft YaHei',sans-serif;background:var(--c-bg);color:var(--c-t1);overflow:hidden;font-weight:300;line-height:1.6}
+.mono{font-family:'SF Mono','Menlo','Consolas','Roboto Mono','Courier New',monospace;letter-spacing:-.01em}
+
+/* ---- loading ---- */
+#loading{position:fixed;inset:0;z-index:9999;background:#000;display:flex;align-items:center;justify-content:center;gap:4px;animation:ldHide 0.01s 1.2s forwards}
+@keyframes ldHide{to{opacity:0;visibility:hidden;pointer-events:none}}
+#loading .lb{width:2px;height:20px;background:rgba(255,255,255,.4);animation:ldPulse 1.4s ease-in-out infinite}
+@keyframes ldPulse{0%,100%{transform:scaleY(1);opacity:.2}50%{transform:scaleY(3);opacity:1}}
+
+/* ---- canvas ---- */
+#canvas-bg{position:fixed;inset:0;z-index:0;pointer-events:none}
+#video-bg{position:fixed;inset:0;z-index:0;display:none}
+#video-bg video{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);min-width:100%;min-height:100%;object-fit:cover}
+
+/* ---- nav ---- */
+#top-nav{position:fixed;top:0;left:0;right:0;z-index:20;display:flex;align-items:center;justify-content:center;gap:clamp(28px,6vw,56px);padding:13px 24px;backdrop-filter:blur(50px) saturate(1.2);-webkit-backdrop-filter:blur(50px) saturate(1.2);background:rgba(0,0,0,.3);border-bottom:.5px solid var(--c-border)}
+.ni{font-size:12px;font-weight:400;letter-spacing:.08em;color:var(--c-t3);cursor:pointer;user-select:none;transition:color .4s var(--ease);text-transform:uppercase}
+.ni:hover{color:var(--c-t1)}
+.ni.on{color:var(--c-t1)}
+
+/* ---- scroll ---- */
+#sc{position:fixed;inset:0;z-index:10;overflow-y:auto;overflow-x:hidden;scroll-behavior:smooth;-webkit-overflow-scrolling:touch}
+.page{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:90px 28px 70px;position:relative}
+@media(min-width:768px){.page{padding:100px 72px 70px}}
+@media(min-width:1024px){.page{padding:100px 104px 70px}}
+.pi{max-width:1080px;width:100%;margin:0 auto}
+
+/* ---- typography ---- */
+h1,h2,h3{font-weight:300;line-height:1.15}
+.t1{color:var(--c-t1)}.t2{color:var(--c-t2)}.t3{color:var(--c-t3)}.t4{color:var(--c-t4)}
+.ac{color:var(--c-accent)}
+
+/* ---- slide ---- */
+.s-l{opacity:0;transform:translateX(-40px)}.s-r{opacity:0;transform:translateX(40px)}.s-b{opacity:0;transform:translateY(36px)}
+.s-l.vis,.s-r.vis,.s-b.vis{opacity:1;transform:translate(0,0);transition:opacity .85s var(--ease),transform .85s var(--ease)}
+
+/* ---- card ---- */
+.card{backdrop-filter:blur(60px);-webkit-backdrop-filter:blur(60px);background:var(--c-surf);border:.5px solid var(--c-border);padding:clamp(22px,3.5vw,34px);cursor:pointer;position:relative;transition:background .5s var(--ease),border-color .5s var(--ease),transform .6s var(--ease)}
+.card:hover{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.16);transform:translateY(-1px)}
+.card-hint{position:absolute;top:16px;right:22px;font-size:10px;letter-spacing:.12em;color:var(--c-t4);transition:color .5s var(--ease)}
+.card:hover .card-hint{color:var(--c-t2)}
+
+/* ---- portrait ---- */
+.portrait{width:clamp(130px,18vw,210px);height:clamp(130px,18vw,210px);border-radius:50%;object-fit:cover;border:1px solid rgba(255,255,255,.1);box-shadow:0 0 80px rgba(255,255,255,.02)}
+
+/* ---- button ---- */
+.btn{display:inline-flex;align-items:center;gap:8px;padding:11px 28px;font-size:12px;letter-spacing:.06em;border:.5px solid var(--c-t4);background:transparent;color:var(--c-t2);cursor:pointer;text-decoration:none;transition:all .45s var(--ease)}
+.btn:hover{border-color:var(--c-t2);color:var(--c-t1);background:rgba(255,255,255,.03)}
+.btn-ac{border-color:var(--c-accent-dim);color:var(--c-accent)}
+.btn-ac:hover{border-color:var(--c-accent);color:#d4b896;background:rgba(191,160,128,.06)}
+
+/* ---- tag cloud ---- */
+.cloud-wrap{position:relative;width:100%;max-width:700px;height:clamp(380px,55vh,520px);margin:0 auto}
+.cloud-wrap .tag{position:absolute;white-space:nowrap;cursor:pointer;font-weight:300;letter-spacing:.01em;transform:translate(-50%,-50%);transition:color .4s var(--ease)}
+.cloud-wrap .tag:hover{color:var(--c-t1)}
+.cloud-wrap .tag.xl{font-size:clamp(34px,5vw,56px);color:var(--c-t1);font-weight:200}
+.cloud-wrap .tag.lg{font-size:clamp(24px,3.5vw,40px);color:var(--c-t2)}
+.cloud-wrap .tag.md{font-size:clamp(17px,2.4vw,28px);color:var(--c-t3)}
+.cloud-wrap .tag.sm{font-size:clamp(14px,1.7vw,20px);color:var(--c-t3)}
+.cloud-wrap .tag.xs{font-size:clamp(11px,1.3vw,16px);color:var(--c-t4)}
+.cloud-wrap .tag.v{writing-mode:vertical-rl;text-orientation:mixed}
+
+/* ---- arrows ---- */
+#nav-arrows{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:30;display:flex;flex-direction:column;align-items:center;gap:1px;user-select:none}
+.arr{width:42px;height:42px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--c-t4);transition:color .45s var(--ease),transform .45s var(--ease)}
+.arr:hover{color:var(--c-t1);transform:scale(1.1)}
+.arr.disabled{color:rgba(255,255,255,.03);pointer-events:none}
+.arr svg{width:22px;height:22px;stroke:currentColor;stroke-width:1.2;fill:none}
+#page-dots{display:flex;gap:10px;margin-bottom:10px}
+.dot{width:3px;height:3px;border-radius:50%;background:var(--c-t4);transition:all .5s var(--ease)}
+.dot.on{background:var(--c-t1);box-shadow:0 0 6px rgba(255,255,255,.3)}
+#page-hint{font-family:'SF Mono','Menlo','Consolas',monospace;font-size:9px;letter-spacing:.25em;color:var(--c-t4);text-align:center;margin-top:6px;text-transform:uppercase}
+
+/* ---- ornaments ---- */
+.page-ornament{position:absolute;bottom:54px;left:50%;transform:translateX(-50%);pointer-events:none;opacity:0;transition:opacity .8s var(--ease) .35s,transform .8s var(--ease) .35s}
+.page-ornament.vis{opacity:1;transform:translateX(-50%) translateY(0)}
+.page-ornament.init{transform:translateX(-50%) translateY(10px)}
+.orn-line{height:.5px;background:var(--c-border);margin:0 auto}
+
+/* ---- modal ---- */
+#mo{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.75);backdrop-filter:blur(40px);-webkit-backdrop-filter:blur(40px);display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .4s var(--ease),visibility .4s var(--ease)}
+#mo.open{opacity:1;visibility:visible;pointer-events:auto}
+#mb{background:rgba(12,12,12,.95);border:.5px solid rgba(255,255,255,.1);padding:clamp(28px,5vw,48px);max-width:620px;width:92vw;max-height:82vh;overflow-y:auto;position:relative}
+#mc{position:absolute;top:18px;right:22px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--c-t3);transition:color .35s;font-size:22px;line-height:1;background:none;border:none;font-weight:200}
+#mc:hover{color:var(--c-t1)}
+#mt{font-size:clamp(22px,2.5vw,30px);font-weight:200;margin-bottom:28px;color:var(--c-t1);letter-spacing:-.01em}
+#mbd{font-size:14px;line-height:1.85;color:var(--c-t2)}
+#mbd h4{font-size:11px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--c-t3);margin:24px 0 8px}
+#mbd h4:first-child{margin-top:0}
+#mbd p{margin-bottom:6px}
+#mbd .hl{color:var(--c-t1);font-weight:400}
+
+.hint{position:absolute;bottom:94px;left:50%;transform:translateX(-50%);font-size:11px;color:var(--c-t4);letter-spacing:.1em;text-align:center;pointer-events:none}
+
+@media(max-width:767px){
+  /* base: bump min size for readability */
+  body{font-size:14px}
+  .t3{color:rgba(255,255,255,.58)}
+  .t4{color:rgba(255,255,255,.42)}
+  .mono{font-size:0.95em}
+
+  /* nav */
+  #top-nav{gap:14px;padding:10px 12px;justify-content:center}
+  .ni{font-size:11px;letter-spacing:.04em;font-weight:400}
+  #lang-toggle{position:static;margin-left:6px;font-size:10px}
+
+  /* pages */
+  .page{padding:72px 16px 52px}
+
+  /* portrait */
+  .portrait{width:clamp(90px,28vw,130px);height:clamp(90px,28vw,130px)}
+
+  /* hero */
+  .page[data-page="0"] .btn{font-size:11px;padding:10px 20px}
+
+  /* cards: reduce grid cols */
+  .card [style*="grid-template-columns:repeat(3"] {grid-template-columns:repeat(2,1fr)!important}
+  .card [style*="grid-template-columns:repeat(4"] {grid-template-columns:repeat(2,1fr)!important}
+  /* card metric labels */
+  .card .t3{font-size:10px!important}
+
+  /* card hints */
+  .card-hint{top:10px;right:10px;font-size:9px}
+
+  /* tag cloud */
+  .cloud-wrap{height:clamp(320px,50vh,400px)}
+  .cloud-wrap .tag.xl{font-size:clamp(24px,5vw,34px)}
+  .cloud-wrap .tag.lg{font-size:clamp(18px,3.5vw,26px)}
+  .cloud-wrap .tag.md{font-size:clamp(14px,2.6vw,20px)}
+  .cloud-wrap .tag.sm{font-size:clamp(12px,2vw,16px)}
+  .cloud-wrap .tag.xs{font-size:clamp(10px,1.5vw,13px)}
+
+  /* arrows */
+  #nav-arrows{bottom:12px}
+  #page-dots{gap:8px;margin-bottom:6px}
+  .dot{width:3px;height:3px}
+
+  /* hints & ornaments */
+  .hint{bottom:66px;font-size:10px}
+  .page-ornament{bottom:38px}
+
+  /* currently exploring */
+  [data-i18n="now.items"]{font-size:12px!important}
+
+  /* philosophy */
+  [data-i18n="philo"]{font-size:15px!important;line-height:1.5}
+
+  /* modal */
+  #mb{width:94vw;padding:24px 20px;max-height:88vh}
+  #mt{font-size:19px;margin-bottom:20px}
+  #mbd{font-size:14px;line-height:1.75}
+  #mbd h4{font-size:10px;margin:18px 0 6px}
+
+  /* BTW */
+  [data-i18n="btw"]{font-size:10px!important}
+
+  /* section headers */
+  [data-i18n="skills.sub"]{font-size:12px!important}
+  [data-i18n="hero.desc"]{font-size:13px!important;line-height:1.75}
+}
+</style>
+</head>
+<body>
+
+<div id="loading"><div class="lb" style="animation-delay:0s"></div><div class="lb" style="animation-delay:.18s"></div><div class="lb" style="animation-delay:.36s"></div></div>
+<canvas id="canvas-bg"></canvas>
+<div id="video-bg"><video id="hv" muted playsinline preload="auto"><source src="hero.mp4" type="video/mp4"></video></div>
+
+<nav id="top-nav">
+  <span class="ni on" data-nav="0" data-i18n="nav.about">About</span>
+  <span class="ni" data-nav="1" data-i18n="nav.skills">Skills</span>
+  <span class="ni" data-nav="2" data-i18n="nav.work">Work</span>
+  <span class="ni" data-nav="3" data-i18n="nav.projects">Projects</span>
+  <span id="lang-toggle" style="position:absolute;right:24px;font-size:10px;letter-spacing:.15em;color:var(--c-t3);cursor:pointer;user-select:none;transition:color .4s var(--ease)" onclick="toggleLang()">中文</span>
+</nav>
+
+<div id="sc">
+
+  <!-- ═══ PAGE 1: ABOUT ═══ -->
+  <section class="page" data-page="0"><div class="pi">
+    <div style="display:flex;flex-direction:column;align-items:center;text-align:center">
+      <!-- Portrait -->
+      <div class="s-b" style="transition-delay:.1s;margin-bottom:clamp(28px,5vw,44px)">
+        <img src="portrait.png" alt="Zachary Pan" class="portrait">
+      </div>
+      <!-- Name -->
+      <div class="s-b" style="transition-delay:.2s;margin-bottom:clamp(12px,2vw,16px)">
+        <h1 style="font-size:clamp(30px,4.5vw,52px);font-weight:200;letter-spacing:-.01em"><span class="t1" data-i18n="hero.name">潘子健</span><span class="t3" style="font-size:.5em;margin-left:14px;font-weight:300">Zachary Pan</span></h1>
+      </div>
+      <!-- Tagline -->
+      <div class="s-b" style="transition-delay:.3s;margin-bottom:clamp(8px,1.5vw,12px)">
+        <p data-i18n="hero.role" style="font-size:clamp(15px,1.8vw,20px);font-weight:300;color:var(--c-accent);letter-spacing:.04em">Project Management &amp; AI Builder</p>
+      </div>
+      <!-- Hero -->
+      <div class="s-b" style="transition-delay:.4s;margin-bottom:clamp(32px,5vw,48px)">
+        <p style="font-size:clamp(36px,6vw,80px);font-weight:200;line-height:1.08;letter-spacing:-.025em">
+          <span class="t1" data-i18n="hero.line1">白天管交付。</span><br><span class="t3" data-i18n="hero.line2">晚上造工具。</span>
+        </p>
+      </div>
+      <!-- Sub -->
+      <div class="s-b" style="transition-delay:.5s;margin-bottom:clamp(20px,3vw,28px)">
+        <p class="t2" style="font-size:15px;font-weight:300;line-height:1.8;max-width:480px" data-i18n="hero.desc">从 IPD 流程到 Claude Code。<br>从供应链到 AI 工作流。<br>一直在找更高效的方式，把复杂变成结果。</p>
+      </div>
+      <!-- Buttons -->
+      <div class="s-b" style="transition-delay:.6s;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:14px;margin-bottom:clamp(16px,2vw,20px)">
+        <a href="resume.pdf" target="_blank" class="btn mono" style="font-size:11px;letter-spacing:.12em" data-i18n="btn.resume">Resume ↓</a>
+        <button class="btn btn-ac mono" style="font-size:11px;letter-spacing:.12em" onclick="openContact()" data-i18n="btn.contact">Get in Touch</button>
+      </div>
+      <!-- BTW -->
+      <div class="s-b" style="transition-delay:.7s">
+        <p class="mono t4" style="font-size:10px;line-height:1.6;max-width:460px;margin:0 auto" data-i18n="btw">BTW — 这个网站本身也是用 Claude Code Vibe Coding 生成的。<br>对话即交付。</p>
+      </div>
+    </div>
+  </div>
+  <div class="page-ornament init" data-ornament="0"><div class="orn-line" style="width:80px"></div><div style="width:3px;height:3px;background:rgba(255,255,255,.12);margin:10px auto 0"></div></div>
+  <div class="hint">↓ Skills</div></section>
+
+  <!-- ═══ PAGE 2: SKILLS ═══ -->
+  <section class="page" data-page="1"><div class="pi" style="text-align:center">
+    <div class="s-b" style="transition-delay:.1s;margin-bottom:clamp(24px,4vw,36px)">
+      <p class="mono t4" style="font-size:10px;letter-spacing:.3em;text-transform:uppercase" data-i18n="skills.title">Skills &amp; Expertise</p>
+      <p class="t3" style="font-size:13px;font-weight:300;margin-top:8px" data-i18n="skills.sub">点击任意标签查看详情</p>
+    </div>
+    <div class="cloud-wrap" id="cloud"></div>
+  </div>
+  <div class="page-ornament init" data-ornament="1" style="bottom:48px"><div style="display:flex;gap:5px;justify-content:center"><span style="width:2px;height:2px;border-radius:50%;background:rgba(255,255,255,.1)"></span><span style="width:3px;height:3px;border-radius:50%;background:rgba(255,255,255,.08)"></span><span style="width:2px;height:2px;border-radius:50%;background:rgba(255,255,255,.12)"></span><span style="width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,.06)"></span><span style="width:2px;height:2px;border-radius:50%;background:rgba(255,255,255,.1)"></span><span style="width:3px;height:3px;border-radius:50%;background:rgba(255,255,255,.08)"></span><span style="width:2px;height:2px;border-radius:50%;background:rgba(255,255,255,.12)"></span></div></div>
+  <div class="hint">↓ Work</div></section>
+
+  <!-- ═══ PAGE 3: WORK ═══ -->
+  <section class="page" data-page="2"><div class="pi" style="max-width:860px">
+    <div class="s-r" style="transition-delay:.1s;margin-bottom:clamp(28px,5vw,44px)">
+      <p class="mono t4" style="font-size:10px;letter-spacing:.3em;text-transform:uppercase" data-i18n="work.title">Work Experience</p>
+    </div>
+    <!-- DONNER -->
+    <div class="s-r card" style="transition-delay:.2s;margin-bottom:14px" onclick="openWork('donner')">
+      <span class="card-hint mono" data-i18n="proj.card_hint">点击查看详情</span>
+      <div style="display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;margin-bottom:18px">
+        <h3 style="font-size:clamp(20px,2.8vw,28px);font-weight:200;letter-spacing:-.01em">DONNER</h3>
+        <span class="mono t4" style="font-size:10px;letter-spacing:.15em">2025.6 – 2026.2 · Project Management Trainee</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(14px,3vw,32px);padding-top:18px;border-top:.5px solid var(--c-border)">
+        <div><p class="mono count-up" data-count="100" data-suffix="%" style="font-size:clamp(24px,3vw,36px);font-weight:200;color:var(--c-t1)">100%</p><p class="t3" style="font-size:11px;margin-top:6px">里程碑准时达成</p></div>
+        <div><p class="mono count-up" data-count="85.7" data-suffix="%" data-dec="1" style="font-size:clamp(24px,3vw,36px);font-weight:200;color:var(--c-t1)">85.7%</p><p class="t3" style="font-size:11px;margin-top:6px">TR 一次通过率</p></div>
+        <div><p class="mono" style="font-size:clamp(24px,3vw,36px);font-weight:200;color:var(--c-t1)">≤3%</p><p class="t3" style="font-size:11px;margin-top:6px">整机成本偏差</p></div>
+      </div>
+    </div>
+    <!-- URBAN REVIVO -->
+    <div class="s-r card" style="transition-delay:.35s" onclick="openWork('ur')">
+      <span class="card-hint mono" data-i18n="proj.card_hint">点击查看详情</span>
+      <div style="display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;margin-bottom:18px">
+        <h3 style="font-size:clamp(20px,2.8vw,28px);font-weight:200;letter-spacing:-.01em">URBAN REVIVO</h3>
+        <span class="mono t4" style="font-size:10px;letter-spacing:.15em">2022.2 – 2023.3 · Procurement PMO</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(14px,3vw,32px);padding-top:18px;border-top:.5px solid var(--c-border)">
+        <div><p class="mono" style="font-size:clamp(24px,3vw,36px);font-weight:200;color:var(--c-t1)">−5.7%</p><p class="t3" style="font-size:11px;margin-top:6px">采购成本降幅</p></div>
+        <div><p class="mono count-up" data-count="93.7" data-suffix="%" data-dec="1" style="font-size:clamp(24px,3vw,36px);font-weight:200;color:var(--c-t1)">93.7%</p><p class="t3" style="font-size:11px;margin-top:6px">打样合格率</p></div>
+        <div><p class="mono" style="font-size:clamp(24px,3vw,36px);font-weight:200;color:var(--c-t1)">−7d</p><p class="t3" style="font-size:11px;margin-top:6px">绿通周期缩短</p></div>
+      </div>
+    </div>
+  </div>
+  <div class="page-ornament init" data-ornament="2"><div style="display:flex;gap:8px;justify-content:center;align-items:flex-end"><span style="width:.5px;height:14px;background:rgba(255,255,255,.08)"></span><span style="width:.5px;height:26px;background:rgba(255,255,255,.06)"></span><span style="width:.5px;height:8px;background:rgba(255,255,255,.1)"></span><span style="width:.5px;height:20px;background:rgba(255,255,255,.06)"></span><span style="width:.5px;height:6px;background:rgba(255,255,255,.1)"></span></div></div>
+  <div class="hint">↓ Projects</div></section>
+
+  <!-- ═══ PAGE 4: PROJECTS ═══ -->
+  <section class="page" data-page="3"><div class="pi" style="max-width:860px">
+    <div class="s-l" style="transition-delay:.1s;margin-bottom:clamp(28px,5vw,44px)">
+      <p class="mono t4" style="font-size:10px;letter-spacing:.3em;text-transform:uppercase" data-i18n="proj.title">Projects</p>
+    </div>
+    <!-- MIYAVI -->
+    <div class="s-l card" style="transition-delay:.2s;margin-bottom:14px" onclick="openProject('miyavi')">
+      <span class="card-hint mono" data-i18n="proj.card_hint">点击查看详情</span>
+      <p class="mono t4" style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;margin-bottom:10px">2025.8 – 2026.1</p>
+      <h3 style="font-size:clamp(20px,2.8vw,28px);font-weight:200;letter-spacing:-.01em;margin-bottom:8px">MIYAVI 联名款 3-in-1 吉他效果器</h3>
+      <p class="t3" style="font-size:13px;line-height:1.7;max-width:540px">主导与日本艺人 MIYAVI 联名开发 Double Swords，统筹品牌、产研、艺人三方团队，借助 Claude Code 自动化甘特图编排。</p>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(12px,2vw,24px);padding-top:18px;margin-top:18px;border-top:.5px solid var(--c-border)">
+        <div><p class="mono count-up" data-count="21" data-suffix="%" style="font-size:clamp(20px,2.2vw,28px);font-weight:200;color:var(--c-t1)">21%</p><p class="t3" style="font-size:10px;margin-top:4px">周期缩短</p></div>
+        <div><p class="mono count-up" data-count="1.93" data-suffix="%" data-dec="2" style="font-size:clamp(20px,2.2vw,28px);font-weight:200;color:var(--c-t1)">1.93%</p><p class="t3" style="font-size:10px;margin-top:4px">成本偏差</p></div>
+        <div><p class="mono" style="font-size:clamp(20px,2.2vw,28px);font-weight:200;color:var(--c-t1)">92%+</p><p class="t3" style="font-size:10px;margin-top:4px">MP 良率</p></div>
+        <div><p class="mono" style="font-size:clamp(20px,2.2vw,28px);font-weight:200;color:var(--c-t1)">0→1</p><p class="t3" style="font-size:10px;margin-top:4px">AI 甘特图</p></div>
+      </div>
+    </div>
+    <!-- MRO 2.0 -->
+    <div class="s-l card" style="transition-delay:.35s;margin-bottom:14px" onclick="openProject('mro')">
+      <span class="card-hint mono" data-i18n="proj.card_hint">点击查看详情</span>
+      <p class="mono t4" style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;margin-bottom:10px">2022.11 – 2023.3</p>
+      <h3 style="font-size:clamp(20px,2.8vw,28px);font-weight:200;letter-spacing:-.01em;margin-bottom:8px">MRO 2.0 数字化流程迭代</h3>
+      <p class="t3" style="font-size:13px;line-height:1.7;max-width:540px">绘制全链路业务流程图，拉通采购、售后与 IT 三方需求对齐，确保系统逻辑与实际业务闭环落地。</p>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(12px,2vw,24px);padding-top:18px;margin-top:18px;border-top:.5px solid var(--c-border)">
+        <div><p class="mono" style="font-size:clamp(20px,2.2vw,28px);font-weight:200;color:var(--c-t1)">−2 人天</p><p class="t3" style="font-size:10px;margin-top:4px">售后耗时降低</p></div>
+        <div><p class="mono count-up" data-count="97.6" data-suffix="%" data-dec="1" style="font-size:clamp(20px,2.2vw,28px);font-weight:200;color:var(--c-t1)">97.6%</p><p class="t3" style="font-size:10px;margin-top:4px">绿通准时率</p></div>
+        <div><p class="mono" style="font-size:clamp(20px,2.2vw,28px);font-weight:200;color:var(--c-t1)">−3单/月</p><p class="t3" style="font-size:10px;margin-top:4px">返单数量</p></div>
+      </div>
+    </div>
+    <!-- AI Meeting Tool -->
+    <div class="s-l card" style="transition-delay:.5s" onclick="openProject('ai')">
+      <span class="card-hint mono" data-i18n="proj.card_hint">点击查看详情</span>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <span style="width:5px;height:5px;border-radius:50%;background:var(--c-accent-dim)"></span>
+        <p class="mono ac" style="font-size:10px;letter-spacing:.2em;text-transform:uppercase">Featured Build</p>
+      </div>
+      <h3 style="font-size:clamp(20px,2.8vw,28px);font-weight:200;letter-spacing:-.01em;margin-bottom:8px">AI 会议纪要智能管理工具</h3>
+      <p class="t3" style="font-size:13px;line-height:1.7;max-width:540px">Claude Code + Vibe Coding 独立开发。从内容导入到风险识别、待办追踪、多格式导出，完整闭环。</p>
+      <div style="display:flex;align-items:center;gap:14px;padding-top:18px;margin-top:18px;border-top:.5px solid var(--c-border);flex-wrap:wrap">
+        <span class="mono" style="font-size:18px;font-weight:200">30min → 5min</span>
+        <span class="t4">|</span>
+        <span class="mono t4" style="font-size:10px;letter-spacing:.1em">Claude Code · Python · API</span>
+        <span class="t4">|</span>
+        <a href="https://ai-execution-pocket.vercel.app/" target="_blank" class="mono ac" style="font-size:10px;letter-spacing:.1em;text-decoration:none;transition:opacity .3s" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'">Live Demo ↗</a>
+      </div>
+    </div>
+    <div class="s-b" style="transition-delay:.55s;margin-top:clamp(24px,4vw,40px);margin-bottom:clamp(20px,3vw,32px)">
+      <div style="text-align:center;padding:clamp(16px,3vw,26px);border:.5px solid var(--c-border);background:var(--c-surf);max-width:500px;margin:0 auto">
+        <p class="mono t4" style="font-size:9px;letter-spacing:.25em;text-transform:uppercase;margin-bottom:12px" data-i18n="now.label">Currently Exploring</p>
+        <p class="t2" style="font-size:13px;font-weight:300;line-height:1.8" data-i18n="now.items">Vibe Coding · AI Product Thinking · Workflow Automation<br>Agent Design · No-code Tool Building</p>
+      </div>
+    </div>
+    <div class="s-b" style="transition-delay:.65s;text-align:center;margin-top:clamp(28px,5vw,48px)">
+      <p class="t2" style="font-size:clamp(16px,2vw,22px);font-weight:200;line-height:1.6" data-i18n="philo">不是纸上谈兵的管理者。<br>是能用 Claude Code 亲手建造工具的 PM。</p>
+    </div>
+  </div>
+  <div class="page-ornament init" data-ornament="3" style="bottom:48px"><div style="display:flex;gap:4px;justify-content:center;align-items:flex-end"><span style="width:3px;height:3px;border-radius:50%;background:rgba(255,255,255,.06)"></span><span style="width:2px;height:2px;border-radius:50%;background:rgba(255,255,255,.1)"></span><span style="width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,.05)"></span><span style="width:2px;height:2px;border-radius:50%;background:rgba(255,255,255,.1)"></span><span style="width:3px;height:3px;border-radius:50%;background:rgba(255,255,255,.06)"></span></div><div class="orn-line" style="width:50px;margin-top:8px"></div></div>
+</section>
+
+</div>
+
+<!-- ARROWS -->
+<div id="nav-arrows">
+  <div id="page-dots"><span class="dot on"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+  <div class="arr" id="arr-up"><svg viewBox="0 0 24 24"><polyline points="6 16 12 10 18 16"/></svg></div>
+  <span id="page-hint"></span>
+  <div class="arr" id="arr-down"><svg viewBox="0 0 24 24"><polyline points="6 8 12 14 18 8"/></svg></div>
+</div>
+
+<!-- MODAL -->
+<div id="mo" onclick="closeModal(event)"><div id="mb" onclick="event.stopPropagation()"><button id="mc" onclick="closeModal()">×</button><div id="mt"></div><div id="mbd"></div></div></div>
+
+
+<script>
+/* ===== i18n ===== */
+var L='cn';
+var I={
+cn:{
+'nav.about':'About','nav.skills':'Skills','nav.work':'Work','nav.projects':'Projects',
+'hero.name':'潘子健','hero.role':'Project Management & AI Builder',
+'hero.line1':'白天管交付。','hero.line2':'晚上造工具。',
+'hero.desc':'从 IPD 流程到 Claude Code。<br>从供应链到 AI 工作流。<br>一直在找更高效的方式，把复杂变成结果。',
+'btn.resume':'Resume ↓','btn.contact':'Get in Touch',
+'btw':'BTW — 这个网站本身也是用 Claude Code Vibe Coding 生成的。<br>对话即交付。',
+'skills.title':'Skills & Expertise','skills.sub':'点击任意标签查看详情',
+'work.title':'Work Experience',
+'proj.title':'Projects','proj.card_hint':'点击查看详情',
+'now.label':'Currently Exploring','now.items':'Vibe Coding · AI Product Thinking · Workflow Automation<br>Agent Design · No-code Tool Building',
+'philo':'不是纸上谈兵的管理者。<br>是能用 Claude Code 亲手建造工具的 PM。',
+'hint.0':'↓ Skills','hint.1':'↓ Work','hint.2':'↓ Projects','hint.3':'',
+'donner.role':'Project Management Trainee',
+'donner.m1':'里程碑准时达成','donner.m2':'TR 一次通过率','donner.m3':'整机成本偏差',
+'ur.role':'Procurement PMO',
+'ur.m1':'采购成本降幅','ur.m2':'打样合格率','ur.m3':'绿通周期缩短',
+'miyavi.title':'MIYAVI 联名款 3-in-1 吉他效果器',
+'miyavi.desc':'主导与日本艺人 MIYAVI 联名开发 Double Swords，统筹品牌、产研、艺人三方团队，借助 Claude Code 自动化甘特图编排。',
+'miyavi.m1':'周期缩短','miyavi.m2':'成本偏差','miyavi.m3':'MP 良率','miyavi.m4':'AI 甘特图',
+'mro.title':'MRO 2.0 数字化流程迭代',
+'mro.desc':'绘制全链路业务流程图，拉通采购、售后与 IT 三方需求对齐，确保系统逻辑与实际业务闭环落地。',
+'mro.m1':'售后耗时降低','mro.m2':'绿通准时率','mro.m3':'返单数量',
+'ai.title':'AI 会议纪要智能管理工具','ai.label':'Featured Build',
+'ai.desc':'Claude Code + Vibe Coding 独立开发。从内容导入到风险识别、待办追踪、多格式导出，完整闭环。',
+'contact.title':'联系我','contact.phone':'电话','contact.email':'邮箱','contact.wechat':'微信','contact.qr':'扫码添加微信'
+},
+en:{
+'nav.about':'About','nav.skills':'Skills','nav.work':'Work','nav.projects':'Projects',
+'hero.name':'Zachary Pan','hero.role':'Project Management & AI Builder',
+'hero.line1':'Ship by day.','hero.line2':'Build by night.',
+'hero.desc':'From IPD processes to Claude Code.<br>From supply chains to AI workflows.<br>Always finding better ways to turn complexity into results.',
+'btn.resume':'Resume ↓','btn.contact':'Get in Touch',
+'btw':'BTW — This site was built with Claude Code via Vibe Coding.<br>Conversation to deployment, no hand-written code.',
+'skills.title':'Skills & Expertise','skills.sub':'Click any tag for details',
+'work.title':'Work Experience',
+'proj.title':'Projects','proj.card_hint':'Click for details',
+'now.label':'Currently Exploring','now.items':'Vibe Coding · AI Product Thinking · Workflow Automation<br>Agent Design · No-code Tool Building',
+'philo':'Not a manager who just talks.<br>I build — with Claude Code in hand.',
+'hint.0':'↓ Skills','hint.1':'↓ Work','hint.2':'↓ Projects','hint.3':'',
+'donner.role':'Project Management Trainee',
+'donner.m1':'On-time Milestones','donner.m2':'First-pass TR Rate','donner.m3':'Unit Cost Deviation',
+'ur.role':'Procurement PMO',
+'ur.m1':'Procurement Cost Reduction','ur.m2':'Sampling Pass Rate','ur.m3':'Cycle Time Reduction',
+'miyavi.title':'MIYAVI Signature 3-in-1 Effects Pedal',
+'miyavi.desc':'Led the co-development of "Double Swords" with Japanese artist MIYAVI, orchestrating branding, R&D, and artist teams. Automated Gantt charts with Claude Code.',
+'miyavi.m1':'Cycle Saved','miyavi.m2':'Cost Deviation','miyavi.m3':'Yield Rate','miyavi.m4':'AI Gantt',
+'mro.title':'MRO 2.0 Digital Workflow Transformation',
+'mro.desc':'Mapped end-to-end business process flows, aligning procurement, after-sales, and IT requirements for closed-loop system delivery.',
+'mro.m1':'Time per Case','mro.m2':'On-time Rate','mro.m3':'Reorder Drop',
+'ai.title':'AI Meeting Intelligence Tool','ai.label':'Featured Build',
+'ai.desc':'Built with Claude Code + Vibe Coding. End-to-end: import → risk analysis → action tracking → export.',
+'contact.title':'Get in Touch','contact.phone':'Phone','contact.email':'Email','contact.wechat':'WeChat','contact.qr':'Scan to add on WeChat'
+}
+};
+function t(k){return I[L][k]||k}
+function toggleLang(){L=L==='cn'?'en':'cn';document.getElementById('lang-toggle').textContent=L==='cn'?'English':'中文';applyI18n()}
+function applyI18n(){
+document.querySelectorAll('[data-i18n]').forEach(function(el){var v=I[L][el.dataset.i18n];if(v!==undefined)el.innerHTML=v});
+// Hints
+var hints=I[L];['hint.0','hint.1','hint.2','hint.3'].forEach(function(k,i){if(window._hints)window._hints[i]=hints[k]});
+var hi=document.getElementById('page-hint');if(hi&&window._cur!==undefined){hi.textContent=I[L]['hint.'+window._cur]||''}
+// Update nav toggle position text
+var lt=document.getElementById('lang-toggle');if(lt)lt.textContent=L==='cn'?'中文':'English';
+}
+setTimeout(applyI18n,100);
+</script>
+<script>
+setTimeout(function(){var l=document.getElementById('loading');if(l){l.style.display='none';l.style.pointerEvents='none'}},2000);
+!function(){
+var c=document.getElementById('canvas-bg'),x=c.getContext('2d'),w,h,sc=document.getElementById('sc');
+var B=[{x:.25,y:.35,r:.45,dx:.00004,dy:.00003,cr:12,cg:18,cb:48},{x:.70,y:.55,r:.38,dx:-.00003,dy:-.00005,cr:8,cg:12,cb:38},{x:.50,y:.22,r:.32,dx:.00005,dy:.00002,cr:16,cg:22,cb:52},{x:.80,y:.78,r:.35,dx:-.00006,dy:.00004,cr:10,cg:14,cb:32},{x:.40,y:.68,r:.28,dx:.00003,dy:-.00004,cr:18,cg:16,cb:40}];
+function R(){w=c.width=window.innerWidth;h=c.height=window.innerHeight}
+window.addEventListener('resize',R);R();
+function D(f){x.clearRect(0,0,w,h);x.fillStyle='#000';x.fillRect(0,0,w,h);var m=Math.min(w,h),ox=f*40,oy=f*20;
+B.forEach(function(b){var cx=b.x*w+ox*(b.dx>0?1:-1),cy=b.y*h+oy*(b.dy>0?1:-1),r=b.r*m,g=x.createRadialGradient(cx,cy,0,cx,cy,r);g.addColorStop(0,'rgba('+b.cr+','+b.cg+','+b.cb+',0.38)');g.addColorStop(.35,'rgba('+b.cr+','+b.cg+','+b.cb+',0.12)');g.addColorStop(.65,'rgba('+b.cr+','+b.cg+','+b.cb+',0.04)');g.addColorStop(1,'rgba(0,0,0,0)');x.fillStyle=g;x.fillRect(0,0,w,h)});
+}
+function A(){B.forEach(function(b){b.x+=b.dx;b.y+=b.dy;if(b.x>1.18||b.x<-.18)b.dx*=-1;if(b.y>1.18||b.y<-.18)b.dy*=-1});var mx=Math.max(1,sc.scrollHeight-sc.clientHeight);D(Math.max(0,Math.min(1,sc.scrollTop/mx)));requestAnimationFrame(A)}
+D(0);requestAnimationFrame(A);
+}();
+</script>
+
+<script>
+/* ===== VIDEO SCRUB ===== */
+!function(){
+var v=document.getElementById('hv'),vb=document.getElementById('video-bg'),cv=document.getElementById('canvas-bg'),sc=document.getElementById('sc'),vl=!1;
+var h=function(){if(vl)return;vl=!0;vb.style.display='block';cv.style.display='none'};
+if(v){v.addEventListener('loadeddata',h);v.addEventListener('canplay',h);v.addEventListener('canplaythrough',h);v.load()}
+sc.addEventListener('scroll',function(){if(!vl||!v||!v.duration||v.seeking)return;var mx=Math.max(1,sc.scrollHeight-sc.clientHeight);v.currentTime=Math.max(0,Math.min(1,sc.scrollTop/mx))*v.duration},{passive:!0});
+}();
+</script>
+
+<script>
+/* ===== SNAP + NAV ===== */
+!function(){
+var sc=document.getElementById('sc'),pages=document.querySelectorAll('.page'),navs=document.querySelectorAll('.ni'),dots=document.querySelectorAll('.dot');
+var au=document.getElementById('arr-up'),ad=document.getElementById('arr-down'),hint=document.getElementById('page-hint');
+var TOTAL=pages.length,cur=0,spinning=!1,wAcc=0,wT=null;
+var hints=[t('hint.0'),t('hint.1'),t('hint.2'),t('hint.3')];
+window._hints=hints;window._cur=cur;
+
+function upd(){
+au.classList.toggle('disabled',cur<=0);ad.classList.toggle('disabled',cur>=TOTAL-1);
+window._cur=cur;hint.textContent=I[L]['hint.'+cur]||hints[cur]||'';
+navs.forEach(function(n,i){n.classList.toggle('on',i===cur)});
+dots.forEach(function(d,i){d.classList.toggle('on',i===cur)});
+}
+function snap(i){
+if(i<0||i>=TOTAL||spinning)return;spinning=!0;cur=i;
+pages[i].scrollIntoView({behavior:'smooth'});upd();
+setTimeout(function(){activate(i)},200);setTimeout(function(){spinning=!1},750);
+}
+sc.addEventListener('wheel',function(e){if(spinning){e.preventDefault();return}wAcc+=e.deltaY;clearTimeout(wT);wT=setTimeout(function(){if(Math.abs(wAcc)>40)snap(cur+(wAcc>0?1:-1));wAcc=0},100)},{passive:!0});
+au.addEventListener('click',function(){if(cur>0)snap(cur-1)});
+ad.addEventListener('click',function(){if(cur<TOTAL-1)snap(cur+1)});
+navs.forEach(function(n){n.addEventListener('click',function(){snap(parseInt(n.dataset.nav))})});
+var ty=0;sc.addEventListener('touchstart',function(e){ty=e.touches[0].clientY},{passive:!0});
+sc.addEventListener('touchend',function(e){if(spinning)return;var d=ty-e.changedTouches[0].clientY;if(Math.abs(d)>50)snap(cur+(d>0?1:-1))});
+document.addEventListener('keydown',function(e){if(e.key==='ArrowDown'||e.key==='j'){e.preventDefault();snap(cur+1)}if(e.key==='ArrowUp'||e.key==='k'){e.preventDefault();snap(cur-1)}});
+upd();
+function activate(i){
+var s=pages[i];if(!s)return;
+s.querySelectorAll('.s-l,.s-r,.s-b').forEach(function(el){el.classList.remove('vis');void el.offsetWidth;el.classList.add('vis')});
+var orn=s.querySelector('.page-ornament');if(orn){orn.classList.remove('vis','init');void orn.offsetWidth;orn.classList.add('vis')}
+if(i===1&&window._rebuildCloud)window._rebuildCloud();
+// Count-up animation
+s.querySelectorAll('.count-up').forEach(function(el){
+  if(el.dataset.done)return;el.dataset.done='1';
+  var target=parseFloat(el.dataset.count),dec=parseInt(el.dataset.dec)||0,suffix=el.dataset.suffix||'';
+  var start=0,dur=1400,begin=performance.now();
+  function tick(now){
+    var p=Math.min(1,(now-begin)/dur);
+    var val=start+(target-start)*(1-Math.pow(1-p,3)); // ease-out
+    el.textContent=(dec>0?val.toFixed(dec):Math.round(val))+suffix;
+    if(p<1)requestAnimationFrame(tick);else el.textContent=target.toFixed(dec)+suffix;
+  }
+  requestAnimationFrame(tick);
+});
+}
+setTimeout(function(){activate(0)},500);
+var obs=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting&&e.intersectionRatio>.3){var i=parseInt(e.target.dataset.page);if(!isNaN(i))activate(i)}})},{threshold:[.3,.5]});
+pages.forEach(function(s){obs.observe(s)});
+}();
+</script>
+
+<script>
+/* ===== WORD CLOUD ===== */
+var tagDefs=[
+{id:'pm',text:'Project Management',cls:'xl',v:0},{id:'vc',text:'Vibe Coding',cls:'lg',v:1},{id:'ipd',text:'IPD',cls:'md',v:0},{id:'sc',text:'Supply Chain',cls:'md',v:0},{id:'agile',text:'Agile',cls:'sm',v:1},{id:'cc',text:'Claude Code',cls:'sm',v:0},{id:'risk',text:'Risk Control',cls:'sm',v:0},{id:'cost',text:'Cost Management',cls:'sm',v:0},{id:'mro',text:'MRO Sourcing',cls:'xs',v:1},{id:'aigc',text:'AIGC',cls:'xs',v:0},{id:'odm',text:'ODM/OEM',cls:'xs',v:1},{id:'cad',text:'AutoCAD',cls:'xs',v:0},{id:'agent',text:'No-code Agent',cls:'xs',v:0}
+];
+function buildCloud(){
+var wrap=document.getElementById('cloud');if(!wrap)return;
+var W=wrap.clientWidth,H=wrap.clientHeight;
+if(W<80||H<80){setTimeout(buildCloud,200);return}
+wrap.innerHTML='';var CELL=10,COLS=Math.floor(W/CELL),ROWS=Math.floor(H/CELL);
+var grid=new Uint8Array(COLS*ROWS);
+var items=[];tagDefs.forEach(function(d){
+var s=document.createElement('span');s.className='tag '+d.cls+(d.v?' v':'');s.textContent=d.text;
+s.style.position='absolute';s.style.left='-9999px';s.style.top='-9999px';
+s.onclick=function(){openTag(d.id)};
+wrap.appendChild(s);void s.offsetWidth;
+var r=s.getBoundingClientRect();var tw=Math.ceil(r.width)+10,th=Math.ceil(r.height)+10;
+s.style.left='';s.style.top='';items.push({el:s,w:tw,h:th,cls:d.cls,id:d.id});
+});
+var order={xl:5,lg:4,md:3,sm:2,xs:1};items.sort(function(a,b){return order[b.cls]-order[a.cls]});
+function canPlace(gx,gy,gw,gh){if(gx<0||gy<0||gx+gw>COLS||gy+gh>ROWS)return false;for(var y=gy;y<gy+gh;y++)for(var x=gx;x<gx+gw;x++)if(grid[y*COLS+x])return false;return true}
+function mark(gx,gy,gw,gh){for(var y=gy;y<gy+gh;y++)for(var x=gx;x<gx+gw;x++)grid[y*COLS+x]=1}
+var cx=Math.floor(COLS/2),cy=Math.floor(ROWS/2);
+items.forEach(function(item){
+var gw=Math.max(1,Math.floor(item.w/CELL)),gh=Math.max(1,Math.floor(item.h/CELL));
+var bestX=-1,bestY=-1,bestDist=1e9,found=false;
+for(var r=0;r<Math.max(COLS,ROWS)&&!found;r++){
+for(var dy=-r;dy<=r&&!found;dy++){for(var dx=-r;dx<=r&&!found;dx++){
+if(Math.abs(dx)!==r&&Math.abs(dy)!==r)continue;
+var gx=cx+dx-Math.floor(gw/2),gy=cy+dy-Math.floor(gh/2);
+if(canPlace(gx,gy,gw,gh)){var dist=dx*dx+dy*dy;if(dist<bestDist){bestDist=dist;bestX=gx;bestY=gy}}
+}}
+if(bestDist<1e8)found=true;
+}
+if(bestX<0){bestX=cx-Math.floor(gw/2);bestY=cy-Math.floor(gh/2)}
+mark(bestX,bestY,gw,gh);
+item.el.style.left=Math.round(bestX*CELL+item.w/2)+'px';
+item.el.style.top=Math.round(bestY*CELL+item.h/2)+'px';
+});
+}
+window._rebuildCloud=buildCloud;
+window.addEventListener('resize',function(){clearTimeout(window._cloudT);window._cloudT=setTimeout(buildCloud,300)});
+setTimeout(function(){var w=document.getElementById('cloud');if(w&&w.clientWidth>50)buildCloud()},500);
+</script>
+
+<script>
+/* ===== MODALS ===== */
+var mo=document.getElementById('mo'),mt=document.getElementById('mt'),mbd=document.getElementById('mbd');
+function closeModal(e){if(e&&e.target!==mo)return;mo.classList.remove('open')}
+document.addEventListener('keydown',function(e){if(e.key==='Escape')mo.classList.remove('open')});
+
+function openContact(){
+mt.innerHTML=t('contact.title');
+mbd.innerHTML='<div style="display:flex;flex-direction:column;gap:20px"><div><h4>'+t('contact.phone')+'</h4><p class="hl" style="font-size:18px">+86 13042055591</p></div><div><h4>'+t('contact.email')+'</h4><p class="hl">pzj19991107@163.com</p></div><div><h4>'+t('contact.wechat')+'</h4><p class="hl">ZacharyPenetti</p></div></div>';
+mo.classList.add('open');
+}
+
+var tagData={
+pm:{title:'Project Management',body:'<p>精通 IPD 流程与敏捷开发方法论，具备从概念到量产的全生命周期交付能力。主导跨职能团队协同，覆盖品牌、产研、供应链及外部合作方。</p><h4>关联成果</h4><p><span class="hl">100%</span> — 里程碑准时达成率（DONNER）</p><p><span class="hl">21%</span> — MIYAVI 项目周期缩短</p>'},
+vc:{title:'Vibe Coding',body:'<p>基于 Claude Code 采用自然语言驱动开发，可独立搭建 AI 工具与自动化工作流，无需专业编程背景。</p><h4>代表项目</h4><p><span class="hl">AI 会议纪要智能管理工具</span> — 30min → 5min</p><p><span class="hl">甘特图自动编排</span> — MIYAVI 项目中 0→1 搭建</p><p><span class="hl">本网站</span> — 亦由 Claude Code Vibe Coding 生成</p>'},
+ipd:{title:'IPD',body:'<p>集成产品开发流程。在 DONNER 主导自研产品全生命周期管理，覆盖进度规划、预算编制、成本审核、风险管理。</p><h4>关联成果</h4><p><span class="hl">100%</span> — 里程碑准时达成率</p><p><span class="hl">85.7%</span> — TR 评审一次通过率</p><p><span class="hl">≤3%</span> — ADCP1 整机成本偏差</p>'},
+agile:{title:'Agile',body:'<p>敏捷开发管理方法论。推行每日站会迭代与看板可视化，提升团队响应速度与交付节奏。</p><h4>关联成果</h4><p><span class="hl">~10%</span> — 日常项目周期缩短（DONNER）</p><p><span class="hl">21%</span> — MIYAVI 项目周期缩短</p>'},
+sc:{title:'Supply Chain',body:'<p>深耕 ODM/OEM 开发与 MRO 寻源，擅长目标成本管理（PDC）与标准化降本。具备从需求分析到供应商全周期引入的完整经验。</p><h4>关联成果</h4><p><span class="hl">−5.7%</span> — 采购成本降幅</p><p><span class="hl">2,000+ 元/年/店</span> — 灯具标准化降本</p>'},
+cc:{title:'Claude Code',body:'<p>AI 辅助编程工具，对话即代码。用于搭建个人 AI 工作流、自动化甘特图编排、开发会议纪要智能管理工具。是 Vibe Coding 的核心实践平台。</p><h4>关联成果</h4><p>本网站、AI 会议纪要工具、甘特图自动编排——均由 Claude Code 驱动实现。</p>'},
+mro:{title:'MRO Sourcing',body:'<p>非生产性物料寻源与供应商开发管理。独立完成从需求分析、工艺匹配、打样验收到大货采购交接的全链路管理。</p><h4>关联成果</h4><p><span class="hl">93.7%</span> — 打样合格率</p><p><span class="hl">−7~10 自然日</span> — 绿通开发周期缩短</p>'},
+risk:{title:'Risk Control',body:'<p>项目风险识别、预判与应对预案制定。运用 IPD 管理逻辑前置识别供应链风险，确保项目在不确定条件下按计划推进。</p><h4>关联成果</h4><p><span class="hl">1.93%–2.41%</span> — MIYAVI 项目成本偏差（低于 3% 预设目标）</p><p>提前 21% 完成市场交付</p>'},
+aigc:{title:'AIGC',body:'<p>AI 生成内容多场景应用。利用 AIGC 技术提升工作效率，包括自动化文档生成、数据分析可视化、会议纪要智能整理等。</p>'},
+cost:{title:'Cost Management',body:'<p>运用 PDC 目标成本法进行预算编制与实时成本监控。在研发全周期中跟踪人力、上游资源与时间成本。</p><h4>关联成果</h4><p><span class="hl">≤3%</span> — DONNER ADCP1 整机成本偏差</p><p><span class="hl">1.93%–2.41%</span> — MIYAVI 项目成本偏差（优于目标）</p>'},
+odm:{title:'ODM/OEM',body:'<p>原始设计与设备制造商开发管理。负责供应商全周期引入，建立评估体系提升协同水平，降低物料采购成本。</p><h4>关联成果</h4><p><span class="hl">−5.7%</span> — 采购成本降幅</p>'},
+cad:{title:'AutoCAD',body:'<p>工程制图工具。精准转化设计师需求为可制造规格，确保技术参数、尺寸与材质的准确性。</p><h4>关联成果</h4><p><span class="hl">93.7%</span> — 打样合格率</p>'},
+agent:{title:'No-code Agent',body:'<p>无代码 AI 智能体搭建。可独立构建业务自动化 Agent，将重复性工作转化为自动化流程，无需专业开发背景。</p>'}
+};
+function openTag(id){var d=tagData[id];if(!d)return;mt.innerHTML=d.title;mbd.innerHTML=d.body;mo.classList.add('open')}
+
+function openWork(type){
+if(type==='donner'){mt.innerHTML='DONNER <span class="t3" style="font-size:.5em;font-weight:300">Project Management Trainee · 2025.6 – 2026.2</span>';mbd.innerHTML='<h4>核心职责</h4><p>主导 IPD 自研产品全生命周期管理，包括开发进度规划、预算编制、成本审核、风险管理；运用敏捷管理方法推动项目交付。</p><p>基于 Claude Code 采用 Vibe Coding 独立开发 AI 会议纪要智能管理工具，实现从内容导入到风险识别及待办追踪的闭环。</p><h4>核心成果</h4><p><span class="hl">100%</span> — 项目里程碑及评审准时达成率（非 ECN）</p><p><span class="hl">85.7%</span> — TR 评审一次通过率</p><p><span class="hl">≤ 3%</span> — ADCP1 整机成本偏差（PDC 目标成本法）</p><p><span class="hl">~10%</span> — 敏捷管理使日常项目周期平均缩短</p>'}
+else{mt.innerHTML='URBAN REVIVO <span class="t3" style="font-size:.5em;font-weight:300">Procurement PMO · 2022.2 – 2023.3</span>';mbd.innerHTML='<h4>核心职责</h4><p>负责全品类 MRO 物料引入与供应商开发，使用 AutoCAD 精准转化设计师需求为可制造规格；独立完成从需求分析、工艺匹配、打样验收到大货采购交接的全链路管理。</p><p>主导 MRO 开发及售后支持端流程重构迭代：建立"绿通"快采机制，重构售后维修流程与数据池。</p><h4>核心成果</h4><p><span class="hl">−5.7%</span> — 采购成本降幅</p><p><span class="hl">93.7%</span> — 打样合格率</p><p><span class="hl">−7~10 自然日/项目</span> — "绿通"开发周期缩短</p><p><span class="hl">2,000+ 元/年/店</span> — 单店灯具成本降低</p>'}
+mo.classList.add('open')
+}
+function openProject(type){
+if(type==='miyavi'){mt.innerHTML='MIYAVI 联名款 3-in-1 吉他效果器 <span class="t3" style="font-size:.5em;font-weight:300">2025.8 – 2026.1</span>';mbd.innerHTML='<h4>项目背景</h4><p>主导与日本艺人 MIYAVI 联名开发 Double Swords 3-in-1 吉他效果器，复刻其经典音色并确保交付落地。</p><h4>核心职责</h4><p><span class="hl">跨职能协同</span> — 协调品牌、产研与艺人团队，解决音色复刻与硬件实现之间的技术偏离。</p><p><span class="hl">流程优化</span> — 运用 IPD 管理逻辑并行与裁切流程节点，前置识别供应链风险。</p><p><span class="hl">AI 赋能</span> — 0→1 搭建 AI 工作流，借助 Claude Code 自动化编排甘特图。</p><h4>核心成果</h4><p><span class="hl">21%</span> — 项目周期缩短</p><p><span class="hl">1.93%–2.41%</span> — 整机成本偏差</p><p><span class="hl">92%+</span> — PVT / MP 良率</p>'}
+else if(type==='mro'){mt.innerHTML='MRO 2.0 数字化流程迭代 <span class="t3" style="font-size:.5em;font-weight:300">2022.11 – 2023.3</span>';mbd.innerHTML='<h4>项目背景</h4><p>针对系统流程老旧、非标采购周期长等痛点，对 MRO 系统进行全链路流程升级。</p><h4>核心职责</h4><p><span class="hl">流程重构</span> — 绘制 MRO 2.0 开发端及售后支持端全流转业务流程图。</p><p><span class="hl">需求拉通</span> — 主导挖掘采购、售后等多业务模块需求，与 IT 对齐逻辑实现可行性。</p><h4>核心成果</h4><p><span class="hl">−2 人天</span> — 单个售后流程耗时降低</p><p><span class="hl">97.6%</span> — 绿通打烊准时率</p><p><span class="hl">100%</span> — MP 质量合格率</p><p><span class="hl">−3 单/月/店</span> — 售后端返单数量</p>'}
+else{mt.innerHTML='AI 会议纪要智能管理工具 <span class="t3" style="font-size:.5em;font-weight:300">个人项目 · 2025</span>';mbd.innerHTML='<h4>项目简介</h4><p>基于 Claude Code 采用 Vibe Coding 独立开发，实现内容导入 → AI 分析 → 风险识别 → 待办追踪 → 多格式导出的完整闭环。</p><p><a href="https://ai-execution-pocket.vercel.app/" target="_blank" class="ac" style="text-decoration:none">Live Demo ↗ ai-execution-pocket.vercel.app</a></p><h4>核心功能</h4><p><span class="hl">智能分析</span> — AI 自动提取关键议题、决策事项及行动项。</p><p><span class="hl">风险识别</span> — 自动标记潜在风险项，按严重程度分级。</p><p><span class="hl">待办追踪</span> — 自动生成待办清单，状态流转与截止提醒。</p><p><span class="hl">灵活导出</span> — 支持 Markdown / PDF / Excel 多格式导出。</p><h4>核心成果</h4><p><span class="hl">30min → 5min</span> — 纪要整理时间压缩比</p>'}
+mo.classList.add('open')
+}
+</script>
+
+</body>
+</html>
