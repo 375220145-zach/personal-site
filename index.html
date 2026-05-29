@@ -514,7 +514,7 @@ function activate(i){
   if(!countDone[i]){countDone[i]=true;animateCounts(s)}
 }
 
-upd();setTimeout(function(){detectPage()},500);
+upd();activate(0);setTimeout(function(){detectPage()},500);
 }();
 </script>
 
