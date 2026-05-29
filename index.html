@@ -91,7 +91,7 @@ h1,h2,h3{font-weight:300;line-height:1.15}
 /* ---- modal ---- */
 #mo{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.75);backdrop-filter:blur(40px);-webkit-backdrop-filter:blur(40px);display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .4s var(--ease),visibility .4s var(--ease)}
 #mo.open{opacity:1;visibility:visible;pointer-events:auto}
-#mb{background:rgba(12,12,12,.95);border:.5px solid rgba(255,255,255,.1);padding:clamp(28px,5vw,48px);max-width:620px;width:92vw;max-height:82vh;overflow-y:auto;position:relative}
+#mb{background:rgba(12,12,12,.95);border:.5px solid rgba(255,255,255,.1);padding:clamp(28px,5vw,48px);max-width:700px;width:92vw;max-height:82vh;overflow-y:auto;position:relative}
 #mc{position:absolute;top:18px;right:22px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--c-t3);transition:color .35s;font-size:22px;line-height:1;background:none;border:none;font-weight:200}
 #mc:hover{color:var(--c-t1)}
 #mt{font-size:clamp(22px,2.5vw,30px);font-weight:200;margin-bottom:28px;color:var(--c-t1);letter-spacing:-.01em}
@@ -100,6 +100,8 @@ h1,h2,h3{font-weight:300;line-height:1.15}
 #mbd h4:first-child{margin-top:0}
 #mbd p{margin-bottom:6px}
 #mbd .hl{color:var(--c-t1);font-weight:400}
+#mbd .mod-video{width:100%;margin-bottom:24px;border-radius:4px;overflow:hidden;border:.5px solid rgba(255,255,255,.08)}
+#mbd .mod-video video{width:100%;display:block}
 
 .hint{position:absolute;bottom:94px;left:50%;transform:translateX(-50%);font-size:11px;color:var(--c-t4);letter-spacing:.1em;text-align:center;pointer-events:none}
 
@@ -169,6 +171,28 @@ h1,h2,h3{font-weight:300;line-height:1.15}
   [data-i18n="skills.sub"]{font-size:12px!important}
   [data-i18n="hero.desc"]{font-size:13px!important;line-height:1.75}
 }
+  /* extra small screens */
+  @media(max-width:400px){
+    #top-nav{gap:8px;padding:8px 6px}
+    .ni{font-size:10px;letter-spacing:.02em}
+    #lang-toggle{font-size:9px!important;margin-left:2px}
+    .page{padding:60px 10px 42px}
+    .card{padding:14px 16px}
+    .card [style*="grid-template-columns:repeat(2"] {grid-template-columns:repeat(1,1fr)!important}
+    .card .mono{font-size:clamp(16px,4vw,22px)!important}
+    #mb{width:96vw;padding:18px 14px;max-height:90vh}
+    #mbd .mod-video{margin-bottom:14px}
+    #mt{font-size:17px;margin-bottom:14px}
+    .cloud-wrap{height:clamp(280px,45vh,340px)}
+    .page-ornament{bottom:28px}
+    .hint{bottom:52px;font-size:9px}
+  }
+
+  /* nav: 5 items on mobile — keep lang toggle in flow */
+  @media(max-width:767px){
+    #lang-toggle{position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:9px}
+    #top-nav{padding-right:48px}
+  }
 </style>
 </head>
 <body>
@@ -182,6 +206,7 @@ h1,h2,h3{font-weight:300;line-height:1.15}
   <span class="ni" data-nav="1" data-i18n="nav.skills">Skills</span>
   <span class="ni" data-nav="2" data-i18n="nav.work">Work</span>
   <span class="ni" data-nav="3" data-i18n="nav.projects">Projects</span>
+	  <span class="ni" data-nav="4" data-i18n="nav.ai">AI</span>
   <span id="lang-toggle" style="position:absolute;right:24px;font-size:10px;letter-spacing:.15em;color:var(--c-t3);cursor:pointer;user-select:none;transition:color .4s var(--ease)" onclick="toggleLang()">中文</span>
 </nav>
 
@@ -291,17 +316,7 @@ h1,h2,h3{font-weight:300;line-height:1.15}
       </div>
     </div>
     <!-- MRO 2.0 -->
-    <div class="s-l card" style="transition-delay:.35s;margin-bottom:14px" onclick="openProject('mro')">
-      <span class="card-hint mono" data-i18n="proj.card_hint">点击查看详情</span>
-      <p class="mono t4" style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;margin-bottom:10px">2022.11 – 2023.3</p>
-      <h3 style="font-size:clamp(20px,2.8vw,28px);font-weight:200;letter-spacing:-.01em;margin-bottom:8px">MRO 2.0 数字化流程迭代</h3>
-      <p class="t3" style="font-size:13px;line-height:1.7;max-width:540px">绘制全链路业务流程图，拉通采购、售后与 IT 三方需求对齐，确保系统逻辑与实际业务闭环落地。</p>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(12px,2vw,24px);padding-top:18px;margin-top:18px;border-top:.5px solid var(--c-border)">
-        <div><p class="mono" style="font-size:clamp(20px,2.2vw,28px);font-weight:200;color:var(--c-t1)">−2 人天</p><p class="t3" style="font-size:10px;margin-top:4px">售后耗时降低</p></div>
-        <div><p class="mono count-up" data-count="97.6" data-suffix="%" data-dec="1" style="font-size:clamp(20px,2.2vw,28px);font-weight:200;color:var(--c-t1)">97.6%</p><p class="t3" style="font-size:10px;margin-top:4px">绿通准时率</p></div>
-        <div><p class="mono" style="font-size:clamp(20px,2.2vw,28px);font-weight:200;color:var(--c-t1)">−3单/月</p><p class="t3" style="font-size:10px;margin-top:4px">返单数量</p></div>
-      </div>
-    </div>
+    
     <!-- AI Meeting Tool -->
     <div class="s-l card" style="transition-delay:.5s" onclick="openProject('ai')">
       <span class="card-hint mono" data-i18n="proj.card_hint">点击查看详情</span>
@@ -332,11 +347,64 @@ h1,h2,h3{font-weight:300;line-height:1.15}
   <div class="page-ornament init" data-ornament="3" style="bottom:48px"><div style="display:flex;gap:4px;justify-content:center;align-items:flex-end"><span style="width:3px;height:3px;border-radius:50%;background:rgba(255,255,255,.06)"></span><span style="width:2px;height:2px;border-radius:50%;background:rgba(255,255,255,.1)"></span><span style="width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,.05)"></span><span style="width:2px;height:2px;border-radius:50%;background:rgba(255,255,255,.1)"></span><span style="width:3px;height:3px;border-radius:50%;background:rgba(255,255,255,.06)"></span></div><div class="orn-line" style="width:50px;margin-top:8px"></div></div>
 </section>
 
+
+  <!-- ═══ PAGE 5: AI ═══ -->
+  <section class="page" data-page="4"><div class="pi" style="max-width:860px">
+    <div class="s-l" style="transition-delay:.1s;margin-bottom:clamp(28px,5vw,44px)">
+      <p class="mono t4" style="font-size:10px;letter-spacing:.3em;text-transform:uppercase" data-i18n="ai.title">AI Projects</p>
+      <p class="t3" style="font-size:13px;font-weight:300;margin-top:8px" data-i18n="ai.sub">Claude Code 驱动的 AI 工具构建</p>
+    </div>
+    <!-- AI Meeting Tool -->
+    <div class="s-l card" style="transition-delay:.2s;margin-bottom:14px" onclick="openProject('ai')">
+      <span class="card-hint mono" data-i18n="proj.card_hint">点击查看详情</span>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <span style="width:5px;height:5px;border-radius:50%;background:var(--c-accent-dim)"></span>
+        <p class="mono ac" style="font-size:10px;letter-spacing:.2em;text-transform:uppercase">Featured Build</p>
+      </div>
+      <h3 style="font-size:clamp(20px,2.8vw,28px);font-weight:200;letter-spacing:-.01em;margin-bottom:8px">AI 会议纪要智能管理工具</h3>
+      <p class="t3" style="font-size:13px;line-height:1.7;max-width:540px">Claude Code + Vibe Coding 独立开发。从内容导入到风险识别、待办追踪、多格式导出，完整闭环。</p>
+      <div style="display:flex;align-items:center;gap:14px;padding-top:18px;margin-top:18px;border-top:.5px solid var(--c-border);flex-wrap:wrap">
+        <span class="mono" style="font-size:18px;font-weight:200">30min → 5min</span>
+        <span class="t4">|</span>
+        <span class="mono t4" style="font-size:10px;letter-spacing:.1em">Claude Code · Python · API</span>
+        <span class="t4">|</span>
+        <a href="https://ai-execution-pocket.vercel.app/" target="_blank" class="mono ac" style="font-size:10px;letter-spacing:.1em;text-decoration:none;transition:opacity .3s" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'">Live Demo ↗</a>
+      </div>
+    </div>
+    <!-- Competitive Analysis Skill -->
+    <div class="s-l card" style="transition-delay:.35s;margin-bottom:14px" onclick="openProject('competitor')">
+      <span class="card-hint mono" data-i18n="proj.card_hint">点击查看详情</span>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <span style="width:5px;height:5px;border-radius:50%;background:var(--c-accent-dim)"></span>
+        <p class="mono ac" style="font-size:10px;letter-spacing:.2em;text-transform:uppercase">Claude Code Skill</p>
+      </div>
+      <h3 style="font-size:clamp(20px,2.8vw,28px);font-weight:200;letter-spacing:-.01em;margin-bottom:8px">竞品分析 Agent Skill</h3>
+      <p class="t3" style="font-size:13px;line-height:1.7;max-width:540px">基于 Claude Code Skill 框架搭建的自动化竞品分析工具。输入产品名即可自动收集、分析、可视化竞品信息，生成深度 Excel 报告。</p>
+      <div style="display:flex;align-items:center;gap:14px;padding-top:18px;margin-top:18px;border-top:.5px solid var(--c-border);flex-wrap:wrap">
+        <span class="mono" style="font-size:18px;font-weight:200">0→1 搭建</span>
+        <span class="t4">|</span>
+        <span class="mono t4" style="font-size:10px;letter-spacing:.1em">Claude Code · Web Search · Excel Export</span>
+        <span class="t4">|</span>
+        <span class="mono ac" style="font-size:10px;letter-spacing:.1em">Skill 框架</span>
+      </div>
+    </div>
+    <div class="s-b" style="transition-delay:.5s;margin-top:clamp(24px,4vw,40px);margin-bottom:clamp(20px,3vw,32px)">
+      <div style="text-align:center;padding:clamp(16px,3vw,26px);border:.5px solid var(--c-border);background:var(--c-surf);max-width:500px;margin:0 auto">
+        <p class="mono t4" style="font-size:9px;letter-spacing:.25em;text-transform:uppercase;margin-bottom:12px" data-i18n="now.label">Currently Exploring</p>
+        <p class="t2" style="font-size:13px;font-weight:300;line-height:1.8" data-i18n="now.items">Vibe Coding · AI Product Thinking · Workflow Automation<br>Agent Design · No-code Tool Building</p>
+      </div>
+    </div>
+    <div class="s-b" style="transition-delay:.6s;text-align:center;margin-top:clamp(28px,5vw,48px)">
+      <p class="t2" style="font-size:clamp(16px,2vw,22px);font-weight:200;line-height:1.6" data-i18n="philo">不是纸上谈兵的管理者。<br>是能用 Claude Code 亲手建造工具的 PM。</p>
+    </div>
+  </div>
+  <div class="page-ornament init" data-ornament="4" style="bottom:48px"><div class="orn-line" style="width:50px"></div><div style="width:4px;height:4px;background:rgba(255,255,255,.08);margin:8px auto 0"></div></div>
+  <div class="hint">↑ Top</div></section>
 </div>
 
 <!-- ARROWS -->
 <div id="nav-arrows">
-  <div id="page-dots"><span class="dot on"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+  <div id="page-dots"><span class="dot on"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
   <div class="arr" id="arr-up"><svg viewBox="0 0 24 24"><polyline points="6 16 12 10 18 16"/></svg></div>
   <span id="page-hint"></span>
   <div class="arr" id="arr-down"><svg viewBox="0 0 24 24"><polyline points="6 8 12 14 18 8"/></svg></div>
@@ -351,7 +419,7 @@ h1,h2,h3{font-weight:300;line-height:1.15}
 var L='cn';
 var I={
 cn:{
-'nav.about':'About','nav.skills':'Skills','nav.work':'Work','nav.projects':'Projects',
+'nav.about':'About','nav.skills':'Skills','nav.work':'Work','nav.projects':'Projects','nav.ai':'AI',
 'hero.name':'潘子健','hero.role':'Project Management & AI Builder',
 'hero.line1':'白天管交付。','hero.line2':'晚上造工具。',
 'hero.desc':'从 IPD 流程到 Claude Code。<br>从供应链到 AI 工作流。<br>一直在找更高效的方式，把复杂变成结果。',
@@ -375,10 +443,10 @@ cn:{
 'mro.m1':'售后耗时降低','mro.m2':'绿通准时率','mro.m3':'返单数量',
 'ai.title':'AI 会议纪要智能管理工具','ai.label':'Featured Build',
 'ai.desc':'Claude Code + Vibe Coding 独立开发。从内容导入到风险识别、待办追踪、多格式导出，完整闭环。',
-'contact.title':'联系我','contact.phone':'电话','contact.email':'邮箱','contact.wechat':'微信','contact.qr':'扫码添加微信'
+'ai.title':'AI Projects','ai.sub':'Claude Code 驱动的 AI 工具构建','contact.title':'联系我','contact.phone':'电话','contact.email':'邮箱','contact.wechat':'微信','contact.qr':'扫码添加微信'
 },
 en:{
-'nav.about':'About','nav.skills':'Skills','nav.work':'Work','nav.projects':'Projects',
+'nav.about':'About','nav.skills':'Skills','nav.work':'Work','nav.projects':'Projects','nav.ai':'AI',
 'hero.name':'Zachary Pan','hero.role':'Project Management & AI Builder',
 'hero.line1':'Ship by day.','hero.line2':'Build by night.',
 'hero.desc':'From IPD processes to Claude Code.<br>From supply chains to AI workflows.<br>Always finding better ways to turn complexity into results.',
@@ -402,7 +470,7 @@ en:{
 'mro.m1':'Time per Case','mro.m2':'On-time Rate','mro.m3':'Reorder Drop',
 'ai.title':'AI Meeting Intelligence Tool','ai.label':'Featured Build',
 'ai.desc':'Built with Claude Code + Vibe Coding. End-to-end: import → risk analysis → action tracking → export.',
-'contact.title':'Get in Touch','contact.phone':'Phone','contact.email':'Email','contact.wechat':'WeChat','contact.qr':'Scan to add on WeChat'
+'ai.title':'AI Projects','ai.sub':'AI Tools Built with Claude Code','contact.title':'Get in Touch','contact.phone':'Phone','contact.email':'Email','contact.wechat':'WeChat','contact.qr':'Scan to add on WeChat'
 }
 };
 function t(k){return I[L][k]||k}
@@ -410,7 +478,7 @@ function toggleLang(){L=L==='cn'?'en':'cn';document.getElementById('lang-toggle'
 function applyI18n(){
 document.querySelectorAll('[data-i18n]').forEach(function(el){var v=I[L][el.dataset.i18n];if(v!==undefined)el.innerHTML=v});
 // Hints
-var hints=I[L];['hint.0','hint.1','hint.2','hint.3'].forEach(function(k,i){if(window._hints)window._hints[i]=hints[k]});
+var hints=I[L];['hint.0','hint.1','hint.2','hint.3','hint.4'].forEach(function(k,i){if(window._hints)window._hints[i]=hints[k]});
 var hi=document.getElementById('page-hint');if(hi&&window._cur!==undefined){hi.textContent=I[L]['hint.'+window._cur]||''}
 // Update nav toggle position text
 var lt=document.getElementById('lang-toggle');if(lt)lt.textContent=L==='cn'?'中文':'English';
@@ -420,16 +488,27 @@ setTimeout(applyI18n,100);
 <script>
 setTimeout(function(){var l=document.getElementById('loading');if(l){l.style.display='none';l.style.pointerEvents='none'}},2000);
 !function(){
-var c=document.getElementById('canvas-bg'),x=c.getContext('2d'),w,h,sc=document.getElementById('sc');
-var B=[{x:.25,y:.35,r:.45,dx:.00004,dy:.00003,cr:12,cg:18,cb:48},{x:.70,y:.55,r:.38,dx:-.00003,dy:-.00005,cr:8,cg:12,cb:38},{x:.50,y:.22,r:.32,dx:.00005,dy:.00002,cr:16,cg:22,cb:52},{x:.80,y:.78,r:.35,dx:-.00006,dy:.00004,cr:10,cg:14,cb:32},{x:.40,y:.68,r:.28,dx:.00003,dy:-.00004,cr:18,cg:16,cb:40}];
-function R(){w=c.width=window.innerWidth;h=c.height=window.innerHeight}
-window.addEventListener('resize',R);R();
-function D(f){x.clearRect(0,0,w,h);x.fillStyle='#000';x.fillRect(0,0,w,h);var m=Math.min(w,h),ox=f*40,oy=f*20;
-B.forEach(function(b){var cx=b.x*w+ox*(b.dx>0?1:-1),cy=b.y*h+oy*(b.dy>0?1:-1),r=b.r*m,g=x.createRadialGradient(cx,cy,0,cx,cy,r);g.addColorStop(0,'rgba('+b.cr+','+b.cg+','+b.cb+',0.38)');g.addColorStop(.35,'rgba('+b.cr+','+b.cg+','+b.cb+',0.12)');g.addColorStop(.65,'rgba('+b.cr+','+b.cg+','+b.cb+',0.04)');g.addColorStop(1,'rgba(0,0,0,0)');x.fillStyle=g;x.fillRect(0,0,w,h)});
-}
-function A(){B.forEach(function(b){b.x+=b.dx;b.y+=b.dy;if(b.x>1.18||b.x<-.18)b.dx*=-1;if(b.y>1.18||b.y<-.18)b.dy*=-1});var mx=Math.max(1,sc.scrollHeight-sc.clientHeight);D(Math.max(0,Math.min(1,sc.scrollTop/mx)));requestAnimationFrame(A)}
-D(0);requestAnimationFrame(A);
-}();
+	var canvas=document.getElementById('canvas-bg'),ctx=canvas.getContext('2d');
+	var sc=document.getElementById('sc'),vb=document.getElementById('video-bg');
+	var W,H,isMobile,particles=[],scrollSm=0,introT=0,burstT=0,prevPage=-1,mx=0,my=0,mouseOn=!1;
+	var NUM_DESKTOP=5000,NUM_MOBILE=1500;
+	function lerp(a,b,t){return a+(b-a)*t}
+	function mapPt(pt){var mx=W*0.02,my=H*0.03;return [mx+pt[0]*(W-2*mx),my+pt[1]*(H-2*my)]}
+	var pageTops=[0,0,0,0,0];
+	function cachePageTops(){for(var i=0;i<5;i++){var el=document.querySelector('.page[data-page="'+i+'"]');pageTops[i]=el?el.offsetTop:i*H}}
+	function getPageFloat(){var st=sc.scrollTop;if(st<=2)return 0;var mx=Math.max(1,sc.scrollHeight-sc.clientHeight);if(st>=mx-2)return 4;var best=0;for(var i=0;i<5;i++){if(pageTops[i]<=st+10)best=i}var frac=0;if(best<4){var r=pageTops[best+1]-pageTops[best];if(r>0)frac=Math.min(1,Math.max(0,(st-pageTops[best])/r))}return best+frac}
+	function shapeSparkle(N){var pts=[],cx=0.50,cy=0.40;for(var i=0;i<N;i++){var r=Math.random(),x,y;if(r<0.55){var a=Math.random()*Math.PI*2,arms=5,armIdx=Math.floor(a/(Math.PI*2)*arms),armAng=(armIdx/arms)*Math.PI*2,spread=0.12,rad=(0.06+Math.random()*0.30);var aa=armAng+(Math.random()-0.5)*spread;x=cx+Math.cos(aa)*rad;y=cy+Math.sin(aa)*rad}else if(r<0.80){var a=Math.random()*Math.PI*2,rad=Math.sqrt(Math.random())*0.12;x=cx+Math.cos(a)*rad;y=cy+Math.sin(a)*rad}else{var a=Math.random()*Math.PI*2,rad=0.28+Math.random()*0.08;x=cx+Math.cos(a)*rad;y=cy+Math.sin(a)*rad}pts.push([x,y])}return pts}
+	function shapeComputer(N){var pts=[],sx=0.18,sy=0.06,sw=0.64,sh=0.50;var stx=0.42,sty=0.56,stw=0.16,sth=0.16;var bx=0.32,by=0.72,bw=0.36,bh=0.06;var kx=0.28,ky=0.78,kw=0.44,kh=0.04;for(var i=0;i<N;i++){var r=Math.random(),x,y;if(r<0.40){x=sx+Math.random()*sw;y=sy+Math.random()*sh}else if(r<0.58){var e=Math.floor(Math.random()*4);if(e===0){x=sx+Math.random()*sw;y=sy}else if(e===1){x=sx+Math.random()*sw;y=sy+sh}else if(e===2){x=sx;y=sy+Math.random()*sh}else{x=sx+sw;y=sy+Math.random()*sh}}else if(r<0.72){x=stx+Math.random()*stw;y=sty+Math.random()*sth}else if(r<0.84){x=bx+Math.random()*bw;y=by+Math.random()*bh}else{x=kx+Math.random()*kw;y=ky+Math.random()*kh}pts.push([x,y])}return pts}
+	function shapeLens(N){var pts=[],cx=0.50,cy=0.38,lensR=0.26;var barrelX=cx+lensR,barrelW=0.32,barrelH=0.10,eyepieceX=barrelX+barrelW;for(var i=0;i<N;i++){var r=Math.random(),x,y;if(r<0.32){var a=Math.random()*Math.PI*2,rad=Math.sqrt(Math.random())*lensR;x=cx+Math.cos(a)*rad;y=cy+Math.sin(a)*rad}else if(r<0.48){var a=Math.random()*Math.PI*2,rad=lensR*(0.88+Math.random()*0.12);x=cx+Math.cos(a)*rad;y=cy+Math.sin(a)*rad}else if(r<0.64){var a=Math.random()*Math.PI*2,rad=Math.sqrt(Math.random())*lensR*0.28;x=cx+Math.cos(a)*rad;y=cy+Math.sin(a)*rad}else if(r<0.82){x=barrelX+Math.random()*barrelW;y=cy-barrelH/2+Math.random()*barrelH}else{var a=Math.random()*Math.PI*2,rad=Math.sqrt(Math.random())*0.04;x=eyepieceX+Math.cos(a)*rad;y=cy+Math.sin(a)*rad}pts.push([x,y])}return pts}
+	function shapeNetwork(N){var pts=[],nodes=[],numNodes=14;for(var i=0;i<numNodes;i++){nodes.push([0.06+Math.random()*0.88,0.04+Math.random()*0.84])}for(var i=0;i<N;i++){var r=Math.random(),x,y;if(r<0.40){var nd=nodes[Math.floor(Math.random()*numNodes)],a=Math.random()*Math.PI*2,rad=Math.sqrt(Math.random())*0.045;x=nd[0]+Math.cos(a)*rad;y=nd[1]+Math.sin(a)*rad}else if(r<0.95){var n1=nodes[Math.floor(Math.random()*numNodes)],n2=nodes[Math.floor(Math.random()*numNodes)],t=Math.random(),mx2=(n1[0]+n2[0])/2+(Math.random()-0.5)*0.08,my2=(n1[1]+n2[1])/2+(Math.random()-0.5)*0.08,u=1-t;x=u*u*n1[0]+2*u*t*mx2+t*t*n2[0];y=u*u*n1[1]+2*u*t*my2+t*t*n2[1]}else{x=0.15+Math.random()*0.70;y=0.12+Math.random()*0.68}pts.push([x,y])}return pts}
+	function shapeGear(N){var pts=[],cx=0.50,cy=0.40,baseR=0.28,teeth=8;for(var i=0;i<N;i++){var r=Math.random(),x,y;if(r<0.60){var a=Math.random()*Math.PI*2,toothPhase=(a/(Math.PI*2))*teeth,toothMod=1+Math.max(0,Math.cos(toothPhase*Math.PI*2))*0.35,rad=baseR*toothMod*(0.7+Math.random()*0.3);x=cx+Math.cos(a)*rad;y=cy+Math.sin(a)*rad}else if(r<0.80){var a=Math.random()*Math.PI*2,rad=baseR*0.35*(0.8+Math.random()*0.4);x=cx+Math.cos(a)*rad;y=cy+Math.sin(a)*rad}else if(r<0.92){var a=Math.random()*Math.PI*2,t=Math.random(),innerR=baseR*0.12,outerR=baseR*0.95,rad=innerR+t*(outerR-innerR);x=cx+Math.cos(a)*rad;y=cy+Math.sin(a)*rad}else{var a=Math.random()*Math.PI*2,rad=Math.sqrt(Math.random())*baseR*0.12;x=cx+Math.cos(a)*rad;y=cy+Math.sin(a)*rad}pts.push([x,y])}return pts}
+	function size(){W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight;isMobile=W<768}
+	function init(){size();cachePageTops();var N=isMobile?NUM_MOBILE:NUM_DESKTOP;var gens=[shapeComputer,shapeLens,shapeNetwork,shapeGear,shapeSparkle];var shapeData=gens.map(function(g){return g(N)});particles=[];for(var i=0;i<N;i++){var rg=Math.floor(Math.random()*5);var p={x:(Math.random()-0.5)*W*3,y:(Math.random()-0.5)*H*3,rx:Math.random()*W,ry:Math.random()*H,sz:0.5+Math.random()*2.0,op:0.06+Math.random()*0.28,sp:[],rg:rg,ra:(rg/5)*Math.PI*2+(Math.random()-0.5)*0.4,rd:Math.random()};for(var s=0;s<5;s++){var pt=shapeData[s][i%shapeData[s].length];var m=mapPt(pt);p.sp.push({x:m[0],y:m[1]})}particles.push(p)}}
+	function getTarget(p,pageFloat){var idx=Math.max(0,Math.min(3,Math.floor(pageFloat)));var frac=pageFloat-idx;if(frac<0)frac=0;if(frac>1)frac=1;var d=Math.sin(frac*Math.PI);var tx,ty;if(frac<0.5){tx=lerp(p.sp[idx].x,p.rx,d);ty=lerp(p.sp[idx].y,p.ry,d)}else{tx=lerp(p.rx,p.sp[idx+1].x,1-d);ty=lerp(p.ry,p.sp[idx+1].y,1-d)}return {x:tx,y:ty}}
+	function tick(ts){requestAnimationFrame(tick);if(vb&&vb.style.display!=='none'&&vb.style.display!=='')return;if(canvas.style.display==='none')return;var pf=getPageFloat();scrollSm=lerp(scrollSm,pf,0.08);introT=Math.min(1,introT+0.004);var cp=Math.round(scrollSm);if(cp!==prevPage&&prevPage>=0)burstT=1;prevPage=cp;if(burstT>0)burstT=Math.max(0,burstT-0.015);ctx.clearRect(0,0,W,H);ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);for(var i=0;i<particles.length;i++){var p=particles[i];var tgt;if(introT<1&&scrollSm<0.02){var rd=(1-Math.min(1,introT*2.8-p.rd*0.7))*Math.max(W,H)*1.8;tgt={x:p.sp[0].x+Math.cos(p.ra)*rd,y:p.sp[0].y+Math.sin(p.ra)*rd}}else{tgt=getTarget(p,scrollSm)}var dx=tgt.x-p.x,dy=tgt.y-p.y,dist=Math.sqrt(dx*dx+dy*dy);var bx=0,by=0;if(dist<5){bx=Math.sin(ts*0.002+i*0.07)*0.4;by=Math.cos(ts*0.0023+i*0.11)*0.4}var spd=dist<5?0.03:0.06;p.x=lerp(p.x,tgt.x+bx,spd);p.y=lerp(p.y,tgt.y+by,spd);if(mouseOn){var mdx=p.x-mx,mdy=p.y-my,md=Math.sqrt(mdx*mdx+mdy*mdy);if(md<140){var mf=(1-md/140)*2.5;p.x+=mdx/md*mf;p.y+=mdy/md*mf}}if(burstT>0){var ba=Math.random()*Math.PI*2,bf=burstT*6;p.x+=Math.cos(ba)*bf;p.y+=Math.sin(ba)*bf}var alpha=p.op*(dist<2?1.4:1);ctx.fillStyle='rgba(255,255,255,'+alpha+')';ctx.fillRect(p.x-p.sz/2,p.y-p.sz/2,p.sz,p.sz)}var vg=ctx.createRadialGradient(W/2,H/2,Math.min(W,H)*0.22,W/2,H/2,Math.max(W,H)*0.7);vg.addColorStop(0,'rgba(0,0,0,0.10)');vg.addColorStop(0.4,'rgba(0,0,0,0.45)');vg.addColorStop(1,'rgba(0,0,0,0.88)');ctx.fillStyle=vg;ctx.fillRect(0,0,W,H)}
+	var resizeT;window.addEventListener('resize',function(){clearTimeout(resizeT);resizeT=setTimeout(function(){init()},250)});window.addEventListener('mousemove',function(e){mx=e.clientX;my=e.clientY;mouseOn=!0},{passive:!0});window.addEventListener('mouseleave',function(){mouseOn=!1});
+	init();requestAnimationFrame(tick);
+	}();
 </script>
 
 <script>
@@ -448,7 +527,7 @@ sc.addEventListener('scroll',function(){if(!vl||!v||!v.duration||v.seeking)retur
 var sc=document.getElementById('sc'),pages=document.querySelectorAll('.page'),navs=document.querySelectorAll('.ni'),dots=document.querySelectorAll('.dot');
 var au=document.getElementById('arr-up'),ad=document.getElementById('arr-down'),hint=document.getElementById('page-hint');
 var TOTAL=pages.length,cur=0,spinning=!1,scrollT=null;
-var hints=[t('hint.0'),t('hint.1'),t('hint.2'),t('hint.3')];
+var hints=[t('hint.0'),t('hint.1'),t('hint.2'),t('hint.3'),t('hint.4')];
 window._hints=hints;window._cur=cur;
 
 function upd(){
@@ -508,8 +587,8 @@ function animateCounts(s){
 var countDone={};
 function activate(i){
   var s=pages[i];if(!s)return;
-  s.querySelectorAll('.s-l,.s-r,.s-b').forEach(function(el){el.classList.remove('vis');void el.offsetWidth;el.classList.add('vis')});
-  var orn=s.querySelector('.page-ornament');if(orn){orn.classList.remove('vis','init');void orn.offsetWidth;orn.classList.add('vis')}
+  var els=s.querySelectorAll('.s-l,.s-r,.s-b');els.forEach(function(el){el.classList.remove('vis')});void s.offsetWidth;els.forEach(function(el,j){el.classList.remove('s-l','s-r','s-b');var dir=j%2===0?'s-l':'s-r';el.classList.add(dir);el.style.transitionDelay=(0.04+(j>>>1)*0.12)+'s';el.classList.add('vis')});
+  var orn=s.querySelector('.page-ornament');if(orn){orn.classList.remove('vis','init');orn.style.transitionDelay=(0.04+((els.length>>>1)+1)*0.12)+'s';void orn.offsetWidth;orn.classList.add('vis')}
   if(i===1&&window._rebuildCloud)window._rebuildCloud();
   if(!countDone[i]){countDone[i]=true;animateCounts(s)}
 }
@@ -598,9 +677,9 @@ else{mt.innerHTML='URBAN REVIVO <span class="t3" style="font-size:.5em;font-weig
 mo.classList.add('open')
 }
 function openProject(type){
-if(type==='miyavi'){mt.innerHTML='MIYAVI 联名款 3-in-1 吉他效果器 <span class="t3" style="font-size:.5em;font-weight:300">2025.8 – 2026.1</span>';mbd.innerHTML='<h4>项目背景</h4><p>主导与日本艺人 MIYAVI 联名开发 Double Swords 3-in-1 吉他效果器，复刻其经典音色并确保交付落地。</p><h4>核心职责</h4><p><span class="hl">跨职能协同</span> — 协调品牌、产研与艺人团队，解决音色复刻与硬件实现之间的技术偏离。</p><p><span class="hl">流程优化</span> — 运用 IPD 管理逻辑并行与裁切流程节点，前置识别供应链风险。</p><p><span class="hl">AI 赋能</span> — 0→1 搭建 AI 工作流，借助 Claude Code 自动化编排甘特图。</p><h4>核心成果</h4><p><span class="hl">21%</span> — 项目周期缩短</p><p><span class="hl">1.93%–2.41%</span> — 整机成本偏差</p><p><span class="hl">92%+</span> — PVT / MP 良率</p>'}
+if(type==='miyavi'){mt.innerHTML='MIYAVI 联名款 3-in-1 吉他效果器 <span class="t3" style="font-size:.5em;font-weight:300">2025.8 – 2026.1</span>';mbd.innerHTML='<div class="mod-video"><video src="89c9d818ea6471aca23e1b766927b458.mp4" controls playsinline preload="metadata"></video></div><h4>项目背景</h4><p>主导与日本艺人 MIYAVI 联名开发 Double Swords 3-in-1 吉他效果器，复刻其经典音色并确保交付落地。</p><h4>核心职责</h4><p><span class="hl">跨职能协同</span> — 协调品牌、产研与艺人团队，解决音色复刻与硬件实现之间的技术偏离。</p><p><span class="hl">流程优化</span> — 运用 IPD 管理逻辑并行与裁切流程节点，前置识别供应链风险。</p><p><span class="hl">AI 赋能</span> — 0→1 搭建 AI 工作流，借助 Claude Code 自动化编排甘特图。</p><h4>核心成果</h4><p><span class="hl">21%</span> — 项目周期缩短</p><p><span class="hl">1.93%–2.41%</span> — 整机成本偏差</p><p><span class="hl">92%+</span> — PVT / MP 良率</p>'}
 else if(type==='mro'){mt.innerHTML='MRO 2.0 数字化流程迭代 <span class="t3" style="font-size:.5em;font-weight:300">2022.11 – 2023.3</span>';mbd.innerHTML='<h4>项目背景</h4><p>针对系统流程老旧、非标采购周期长等痛点，对 MRO 系统进行全链路流程升级。</p><h4>核心职责</h4><p><span class="hl">流程重构</span> — 绘制 MRO 2.0 开发端及售后支持端全流转业务流程图。</p><p><span class="hl">需求拉通</span> — 主导挖掘采购、售后等多业务模块需求，与 IT 对齐逻辑实现可行性。</p><h4>核心成果</h4><p><span class="hl">−2 人天</span> — 单个售后流程耗时降低</p><p><span class="hl">97.6%</span> — 绿通打烊准时率</p><p><span class="hl">100%</span> — MP 质量合格率</p><p><span class="hl">−3 单/月/店</span> — 售后端返单数量</p>'}
-else{mt.innerHTML='AI 会议纪要智能管理工具 <span class="t3" style="font-size:.5em;font-weight:300">个人项目 · 2025</span>';mbd.innerHTML='<h4>项目简介</h4><p>基于 Claude Code 采用 Vibe Coding 独立开发，实现内容导入 → AI 分析 → 风险识别 → 待办追踪 → 多格式导出的完整闭环。</p><p><a href="https://ai-execution-pocket.vercel.app/" target="_blank" class="ac" style="text-decoration:none">Live Demo ↗ ai-execution-pocket.vercel.app</a></p><h4>核心功能</h4><p><span class="hl">智能分析</span> — AI 自动提取关键议题、决策事项及行动项。</p><p><span class="hl">风险识别</span> — 自动标记潜在风险项，按严重程度分级。</p><p><span class="hl">待办追踪</span> — 自动生成待办清单，状态流转与截止提醒。</p><p><span class="hl">灵活导出</span> — 支持 Markdown / PDF / Excel 多格式导出。</p><h4>核心成果</h4><p><span class="hl">30min → 5min</span> — 纪要整理时间压缩比</p>'}
+else if(type==='competitor'){mt.innerHTML='竞品分析 Agent Skill <span class="t3" style="font-size:.5em;font-weight:300">Claude Code Skill · 2026</span>';mbd.innerHTML='<h4>项目简介</h4><p>基于 Claude Code Skill 框架搭建的自动化竞品分析工具。输入产品名即可自动完成：竞品信息收集 → 多维度对比分析 → 数据可视化 → Excel 深度报告导出。</p><h4>技术架构</h4><p><span class="hl">Skill 框架</span> — 遵循 Claude Code skill-creator 规范，定义触发条件、工作流与输出格式。</p><p><span class="hl">Web Search 集成</span> — 自动搜索并抓取竞品公开信息。</p><p><span class="hl">Excel 自动生成</span> — 结构化数据导出为专业分析报告。</p><h4>核心能力</h4><p><span class="hl">全品类覆盖</span> — 实体商品、SaaS、消费电子、线下服务等。</p><p><span class="hl">自动化流程</span> — 从搜索到报告生成，无人值守。</p>'}else{mt.innerHTML='AI 会议纪要智能管理工具AI 会议纪要智能管理工具 <span class="t3" style="font-size:.5em;font-weight:300">个人项目 · 2025</span>';mbd.innerHTML='<h4>项目简介</h4><p>基于 Claude Code 采用 Vibe Coding 独立开发，实现内容导入 → AI 分析 → 风险识别 → 待办追踪 → 多格式导出的完整闭环。</p><p><a href="https://ai-execution-pocket.vercel.app/" target="_blank" class="ac" style="text-decoration:none">Live Demo ↗ ai-execution-pocket.vercel.app</a></p><h4>核心功能</h4><p><span class="hl">智能分析</span> — AI 自动提取关键议题、决策事项及行动项。</p><p><span class="hl">风险识别</span> — 自动标记潜在风险项，按严重程度分级。</p><p><span class="hl">待办追踪</span> — 自动生成待办清单，状态流转与截止提醒。</p><p><span class="hl">灵活导出</span> — 支持 Markdown / PDF / Excel 多格式导出。</p><h4>核心成果</h4><p><span class="hl">30min → 5min</span> — 纪要整理时间压缩比</p>'}
 mo.classList.add('open')
 }
 </script>
