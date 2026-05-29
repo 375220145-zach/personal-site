@@ -170,6 +170,8 @@ h1,h2,h3{font-weight:300;line-height:1.15}
   /* section headers */
   [data-i18n="skills.sub"]{font-size:12px!important}
   [data-i18n="hero.desc"]{font-size:13px!important;line-height:1.75}
+  .card{border-color:rgba(255,255,255,.15)!important;background:rgba(255,255,255,.03)!important}
+  .card .t3{color:rgba(255,255,255,.62)!important}
 }
   /* extra small screens */
   @media(max-width:400px){
@@ -508,8 +510,8 @@ setTimeout(function(){var l=document.getElementById('loading');if(l){l.style.dis
 /* ===== VIDEO SCRUB ===== */
 !function(){
 var v=document.getElementById('hv'),vb=document.getElementById('video-bg'),cv=document.getElementById('canvas-bg'),sc=document.getElementById('sc'),vl=!1;
-var h=function(){if(vl)return;vl=!0;vb.style.display='block';cv.style.display='none'};
-if(v){v.addEventListener('loadeddata',h);v.addEventListener('canplay',h);v.addEventListener('canplaythrough',h);v.load()}
+var h=function(){if(vl)return;if(!v.duration||v.duration<=0)return;vl=!0;vb.style.display='block';cv.style.display='none'};
+if(v){v.addEventListener('loadeddata',h);v.addEventListener('canplay',h);v.addEventListener('canplaythrough',h)}
 sc.addEventListener('scroll',function(){if(!vl||!v||!v.duration||v.seeking)return;var mx=Math.max(1,sc.scrollHeight-sc.clientHeight);v.currentTime=Math.max(0,Math.min(1,sc.scrollTop/mx))*v.duration},{passive:!0});
 }();
 </script>
